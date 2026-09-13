@@ -92,7 +92,7 @@ list_sort
 
 Ces noms sont conservés dans le JSON et, autant que possible, dans le
 code Python et JavaScript. Ne pas introduire inutilement `itemtype`,
-`author`, `year`, `list_id` ou `list_name`.
+`author`, `year`, `list_no` ou `list_name`.
 
   Champ               Signification
   ------------------- --------------------------------------------

@@ -18,7 +18,7 @@ Koha
       └── fichiers XLSX par liste
               │
               ▼
-        <koha-books>
+        <koha-list-widget>
           ├── affichage Web
           ├── liens vers Primo
           └── événements → Matomo
@@ -56,7 +56,7 @@ Le Web Component `<koha-list-widget>` propose :
 
 <koha-list-widget
   src="/data/data.json"
-  list="11"
+  list_id="11"
   display="carousel"
   limit="30"
   sort="date"
@@ -79,9 +79,9 @@ koha-widget/
 ├── scripts/
 │   └── csv_to_json.py
 ├── widget/
-│   ├── koha-books.js
-│   ├── koha-books-custom.css
-│   └── koha-books-matomo.js
+│   ├── koha-list-widget.js
+│   ├── koha-list-widget-custom.css
+│   └── koha-list-widget-matomo.js
 ├── covers/
 │   └── .cover-cache.json
 ├── exports/

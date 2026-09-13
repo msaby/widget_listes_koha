@@ -106,7 +106,7 @@ internes au Shadow DOM.
 -   Échapper tout contenu injecté dans du HTML.
 -   Préférer la création DOM (`textContent`, `setAttribute`) à la
     concaténation HTML lorsque pratique.
--   Valider les valeurs numériques (`list`, `limit`, `paginate`,
+-   Valider les valeurs numériques (`list_id`, `limit`, `paginate`,
     `autoplay-delay`).
 -   Valeurs invalides : comportement sûr, pas d'exception non gérée.
 -   Ne pas supposer que tous les champs bibliographiques sont

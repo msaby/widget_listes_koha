@@ -22,7 +22,7 @@ Points à ne pas rater :
 - attention à l'ambiguïté du terme `list` :
   - `display="list"` désigne un **mode d'affichage** des résultats, au même
     niveau que `carousel`, `grid` et `compact` ;
-  - `list_id` et l'attribut HTML `list="11"` désignent une
+  - `list_id` et l'attribut HTML `list_id="11"` désignent une
     **liste Koha** par son identifiant numérique, c'est-à-dire la source/sélection bibliographique.
   - `list` désigne une liste Koha par son nom en clair
   Ces usages sont intentionnels et ne doivent pas être confondus ni renommés pour tenter de les uniformiser.

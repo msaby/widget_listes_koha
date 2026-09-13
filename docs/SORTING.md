@@ -129,4 +129,4 @@ En carousel, un changement de recherche réinitialise le scroll.
 
 Afficher un état explicite lorsque la liste existe mais que la recherche
 ne trouve aucun document. Cet état est distinct de l'absence/invalidité
-du paramètre `list`.
+du paramètre `list_id`.
