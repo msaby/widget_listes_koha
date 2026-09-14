@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+.venv/
+/data/data.json
+/exports/*.xlsx
+/covers/
+/cover-probe/
+node_modules/
+/test-results/
+/playwright-report/

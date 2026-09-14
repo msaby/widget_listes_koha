@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sélections documentaires — Koha</title>
+  <link rel="stylesheet" href="../widget/koha-list-widget-custom.css">
+  <script type="module" src="../widget/koha-list-widget.js"></script>
+  <!-- Exemple d'intégration : sans tracker configuré, les commandes restent
+       dans window._paq et aucune donnée n'est envoyée à un serveur Matomo. -->
+  <script src="../widget/koha-list-widget-matomo.js" defer></script>
+  <script src="../demo/demo.js" defer></script>
+  <style>
+    body { margin:0; font-family:system-ui,sans-serif; color:#20313d; background:#f7f9fa; }
+    main { max-width:1100px; margin:auto; padding:clamp(16px,4vw,48px); }
+    h1 { font-size:clamp(1.6rem,4vw,2.4rem); }
+    main > p { max-width:65ch; line-height:1.6; }
+    section { margin:3rem 0; }
+    section > h2 { font-size:1.1rem; color:#495b67; }
+    a { color:#215a73; }
+    nav { display:flex; flex-wrap:wrap; gap:.5rem 1rem; }
+    nav a,summary { padding:.65rem 0; }
+    details { margin:1rem 0; }
+    summary { cursor:pointer; font-weight:600; }
+    pre { white-space:pre-wrap; overflow-wrap:anywhere; background:#eaf0f3; padding:1rem; border-radius:.5rem; }
+    code { font-size:.9rem; }
+    button { font:inherit; padding:.65rem 1rem; cursor:pointer; }
+    :is(a,button,summary):focus-visible { outline:3px solid #b45105; outline-offset:3px; }
+    koha-list-widget { background:white; padding:clamp(8px,2vw,24px); border:1px solid #d5dde2; border-radius:12px; }
+  </style>
+</head>
+<body><main>
+  <h1>Sélections documentaires</h1>
+  <p>Explorez les sélections des bibliothèques. Chaque document ouvre sa notice dans le catalogue, dans un nouvel onglet.</p>
+  <p>Cette démonstration utilise les listes 11 et 32 du CSV fourni. Chaque exemple propose son code HTML et un exercice pour essayer ses contrôles.</p>
+  <nav aria-label="Exemples de démonstration">
+    <a href="#carousel">Carrousel</a><a href="#grid">Grille</a><a href="#list">Liste</a>
+    <a href="#compact">Compact</a><a href="#autoplay">Autoplay</a><a href="#rapide">Repli</a><a href="#analytics">Événements</a>
+  </nav>
+  <details>
+    <summary>Démarrer et intégrer la démonstration</summary>
+    <p>Depuis la racine du dépôt, avec Python 3.10+ et Node.js 22+ :</p>
+    <pre><code>python -m pip install -r requirements.txt
+python scripts/csv_to_json.py --skip-covers
+npm start</code></pre>
+    <p>Ouvrir http://127.0.0.1:4173/demo/index.html. Arrêter le serveur avec Ctrl+C.
+      Le JSON et les Excel doivent être générés avant de consulter les exemples.
+      Avec <code>--skip-covers</code>, les emplacements de couverture restent vides.</p>
+    <p>Charger le composant une seule fois dans la page hôte, puis reprendre le code d'un exemple.
+      Les chemins ci-dessous supposent les dossiers <code>widget/</code> et <code>data/</code> à la racine du site :</p>
+    <pre><code>&lt;script type="module" src="/widget/koha-list-widget.js"&gt;&lt;/script&gt;
+&lt;link rel="stylesheet" href="/widget/koha-list-widget-custom.css"&gt;
+&lt;!-- Facultatif, pour Matomo configuré par le site hôte : --&gt;
+&lt;script src="/widget/koha-list-widget-matomo.js" defer&gt;&lt;/script&gt;</code></pre>
+    <p>Le guide complet du dépôt se trouve dans <code>docs/UTILISATION.md</code> :
+      publication, mise à jour quotidienne, options, personnalisation et dépannage.</p>
+  </details>
+  <noscript>JavaScript doit être activé pour afficher les sélections et les exemples d'intégration.</noscript>
+  <section id="carousel"><h2>À parcourir</h2>
+    <p>Sans défilement automatique. Essayez les flèches, la recherche et le bouton de repli. Au clavier, utilisez Tab, puis Gauche/Droite ou Début/Fin dans les documents.</p>
+    <koha-list-widget analytics-id="demo-carousel-11" src="../data/data.json" list_id="11" display="carousel" limit="30" searchable show-list-name export="xlsx" visibility="collapsible"></koha-list-widget>
+  </section>
+  <section id="grid"><h2>En grille</h2>
+    <p>Six documents par page, triés par titre. Changez de page en haut puis en bas : les deux paginations restent synchronisées.</p>
+    <koha-list-widget analytics-id="demo-grid-32" src="../data/data.json" list_id="32" display="grid" limit="100" paginate="6" sort="title" searchable show-list-name export="xlsx"></koha-list-widget>
+  </section>
+  <section id="list"><h2>En liste</h2>
+    <p>Les publications les plus récentes apparaissent d'abord. Recherchez un mot, puis téléchargez l'Excel : il conserve toute la liste.</p>
+    <koha-list-widget analytics-id="demo-list-11" src="../data/data.json" list_id="11" display="list" limit="100" paginate="5" searchable show-list-name sort="date" export="xlsx"></koha-list-widget>
+  </section>
+  <section id="compact"><h2>Vue compacte</h2>
+    <p>Une ligne par document, sans couverture. Réduisez la fenêtre pour observer la troncature visuelle ; les textes complets restent accessibles.</p>
+    <koha-list-widget analytics-id="demo-compact-32" src="../data/data.json" list_id="32" display="compact" limit="100" paginate="10" searchable show-list-name export="xlsx"></koha-list-widget>
+  </section>
+  <section id="autoplay"><h2>Défilement automatique</h2>
+    <p>Délai par défaut : cinq secondes, sans export Excel. Éloignez le pointeur et le focus pour observer le mouvement, puis essayez Pause/Reprendre. La préférence système de réduction des mouvements désactive l'autoplay.</p>
+    <koha-list-widget analytics-id="demo-autoplay-32" src="../data/data.json" list_id="32" display="carousel" limit="30" autoplay show-list-name visibility="collapsible" description="Le défilement s’arrête pendant la lecture au clavier ou au survol. Vous pouvez aussi le mettre en pause."></koha-list-widget>
+  </section>
+  <section id="rapide"><h2>Défilement rapide, sélection repliée</h2>
+    <p>Dépliez la sélection pour essayer le délai de 1 000 ms. Quittez ensuite le widget avec le pointeur et le clavier pour laisser le défilement reprendre.</p>
+    <koha-list-widget analytics-id="demo-rapide-11" src="../data/data.json" list_id="11" display="carousel" limit="12" autoplay autoplay-delay="1000" show-list-name visibility="collapsed"></koha-list-widget>
+  </section>
+  <p tabindex="-1">Fin des sélections.</p>
+  <section id="analytics"><h2>Observer les événements</h2>
+    <p>Les dix dernières interactions sont affichées ici. Aucun serveur Matomo n'est configuré : les commandes restent dans <code>window._paq</code>.
+      Les mouvements automatiques ne doivent produire aucun événement.</p>
+    <details>
+      <summary>Journal local des interactions</summary>
+      <button id="clear-events" type="button">Effacer le journal local</button>
+      <pre id="event-log">Aucune interaction pour le moment.</pre>
+    </details>
+  </section>
+</main></body>
+</html>

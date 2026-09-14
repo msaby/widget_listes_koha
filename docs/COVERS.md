@@ -111,3 +111,92 @@ Le navigateur n'utilise pas `cover_url`.
 
 `object-fit: contain`; image décorative `alt=""`; lazy loading lorsque
 pertinent.
+
+## 9. Implémentation Python et fournisseurs
+
+`scripts/covers.py` contient la récupération et le cache ;
+`scripts/csv_to_json.py` l'appelle avant les exports. Pillow valide et
+convertit les images en JPEG (fond blanc pour la transparence). Les réponses
+de plus de 12 Mio, les images illisibles et les images de moins de 32 pixels
+sur un côté sont rejetées. Cette vérification ne détecte pas tous les
+placeholders graphiques des fournisseurs.
+
+Dans le champ `isbn`, les tirets sont supprimés avant de
+chercher la première séquence continue de 13 chiffres ; à défaut, la
+première séquence de 9 chiffres suivis d'un chiffre ou de `X` (`x` accepté).
+La clé de contrôle est vérifiée ; un ISBN-13 doit commencer par 978 ou 979.
+Si l'ISBN est absent, non extractible ou invalide, la même extraction et
+vérification de clé sont appliquées au champ `ean`. Un seul identifiant
+est retenu : un ISBN valide est prioritaire sur l'EAN. Les espaces et les textes parasites ne sont pas
+concaténés pour former artificiellement un identifiant. Les données
+bibliographiques originales restent inchangées.
+
+Google et la BnF reçoivent les identifiants dans leur format natif extrait
+(10 ou 13 caractères). Seul Amazon convertit les ISBN-13 commençant par
+978 en ISBN-10, en recalculant la clé ; les ISBN-13 commençant par 979 ne
+sont pas convertibles. Cette règle s'applique également à l'EAN de repli :
+conversion si son préfixe est 978, aucune requête Amazon s'il commence par
+979 (ou tout autre préfixe non convertible). La comparaison des résultats Google peut utiliser
+l'équivalence ISBN-10/ISBN-13, sans changer l'identifiant de la requête.
+
+- Google Books : recherche `isbn:` via
+  `https://www.googleapis.com/books/v1/volumes`, puis téléchargement de
+  l'image d'un résultat dont l'ISBN correspond. La variable d'environnement
+  `GOOGLE_BOOKS_API_KEY` permet d'ajouter une clé. Voir la
+  [documentation Google Books](https://developers.google.com/books/docs/v1/using).
+- BnF : requête `EAN` ou `ISBN` vers
+  `https://openapi.bnf.fr/couverture/image/image/recupererImage`, avec
+  `couverture=1`, `taille=originale` et `hauteur=600`. Cet endpoint est
+  documenté en version bêta. La BnF signale qu'une absence d'image peut
+  actuellement produire un HTTP 500 ; le script conserve ces erreurs comme
+  retentables pour éviter de mémoriser une panne comme une absence définitive.
+  Voir la [documentation BnF](https://api.bnf.fr/fr/api-service-couvertures-du-catalogue-general).
+- Amazon : essai du service d'images historique
+  `https://images-na.ssl-images-amazon.com/images/P/{ISBN10}.01.LZZZZZZZ.jpg`.
+  Les ISBN-13 commençant par 978 sont convertis en ISBN-10. Les autres EAN
+  ne permettent pas cette résolution. Ce service n'offre pas de garantie
+  de disponibilité ; il ne s'agit pas d'une intégration à l'API commerciale
+  authentifiée d'Amazon. Les refus d'accès sont signalés sans contournement.
+
+## 10. Détails du cache et reprise
+
+Le cache positif ajoute `retrieved_at` (date UTC) à la provenance. Cette
+information permet notamment de conserver la source BnF et la date de
+récupération. La source et la date devront être mentionnées lors de la
+présentation publique des vignettes BnF, conformément à sa documentation.
+
+Les nouvelles entrées négatives mémorisent les identifiants interrogés :
+
+``` json
+{"negative": {"google:272037": {"identifiers": ["9782765409779"]}}}
+```
+
+Une modification des ISBN/EAN déclenche ainsi une nouvelle tentative.
+Les anciennes entrées `true` restent lisibles. L'option
+`--retry-missing-covers` réinitialise toutes les entrées négatives ; elle ne
+supprime pas les images positives. Les éventuelles anciennes entrées
+`cover_url:*` et `csv:*` sont éliminées.
+
+Les HTTP 401, 403 et 429 suspendent le fournisseur jusqu'au prochain
+lancement, sans cache négatif. Les erreurs réseau, HTTP 5xx et réponses
+mal formées restent retentables. Les HTTP 404/410, résultats sans image et
+images minuscules sont considérés comme des absences explicites.
+
+Lorsqu'une nouvelle URL échoue et qu'aucun fournisseur ne réussit, une
+ancienne image locale valide est conservée avec sa provenance. Un cache
+illisible est signalé et reconstruit ; une image locale corrompue est
+retéléchargée si possible. Images et métadonnées sont écrites par
+remplacement atomique de fichiers individuels. Exécuter un seul traitement
+à la fois sur un même dossier de cache.
+
+## 11. Tests
+
+``` console
+python -m unittest discover -s tests -v
+python scripts/probe_covers.py --sample 3
+python scripts/probe_covers.py --sample 3 --cover-source bnf
+```
+
+Les tests unitaires simulent les fournisseurs et ne dépendent pas du réseau.
+La sonde réelle utilise un dossier distinct par lancement dans `cover-probe/`
+et produit un rapport JSON avec les compteurs et les fichiers récupérés.

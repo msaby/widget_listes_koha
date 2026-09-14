@@ -168,3 +168,57 @@ visites des pages contenant le widget
 
 Ne jamais compter les mouvements autoplay dans les interactions
 utilisateur.
+
+## 7. Intégration disponible
+
+``` html
+<script type="module" src="/widget/koha-list-widget.js"></script>
+<script src="/widget/koha-list-widget-matomo.js" defer></script>
+<koha-list-widget src="/data/data.json" list_id="11"
+  analytics-id="list11-accueil" display="compact" export="xlsx">
+</koha-list-widget>
+```
+
+L'adaptateur est facultatif. Il ne charge pas `matomo.js` et ne configure
+ni URL de collecte ni identifiant de site. Ces éléments restent à la charge
+de la page hôte, comme sa gestion du consentement. Sans tracker chargé,
+les commandes restent dans `_paq` en mémoire et aucun envoi n'a lieu.
+L'adaptateur conserve une file ou un tracker déjà présent ; un second
+chargement n'installe pas d'écouteur supplémentaire. Une erreur du tracker
+ne bloque pas l'interface.
+
+Le format suit l'[API JavaScript officielle de Matomo](https://developer.matomo.org/guides/tracking-javascript-guide).
+Les noms sont construits dans cet ordre : `list_id`, `display`, `widget_id`,
+`site`, `page_path`, `page_title`, puis les champs spécifiques dans l'ordre
+décrit ci-dessus. Chaque valeur est encodée avec `encodeURIComponent` pour
+éviter les ambiguïtés avec ` | ` ou `=` ; `decodeURIComponent` la restitue.
+Les événements inconnus, champs obligatoires invalides et champs supplémentaires
+ne sont pas transmis (un événement invalide est entièrement ignoré).
+
+`analytics-id` est recommandé et doit distinguer les emplacements du site.
+Sans cet attribut, `widget_id` utilise l'attribut HTML `id`, puis un identifiant
+automatique propre à l'instance. Ce dernier survit aux nouveaux rendus et
+reconnexions, mais n'est pas garanti stable entre visites.
+
+Les événements sont émis sur la balise avec `bubbles: true` et `composed: true`.
+Ils peuvent donc être écoutés au niveau du document, même si le widget est
+inséré dans un autre Shadow DOM :
+
+``` javascript
+document.addEventListener('koha-list-widget:interaction', event => {
+  console.log(event.detail); // Diagnostic local, sans adaptateur requis.
+});
+```
+
+Les activations de liens au clavier et par clic central sont également suivies.
+`excel_download` mesure l'activation du lien, pas la réussite du téléchargement.
+Pour le carrousel, `direction` vaut `next` ou `previous` ; le clavier relève
+de `navigation_type: scroll`. La première carte même partiellement visible
+détermine `first_visible_position` (à partir de 1). Un geste sans déplacement
+ne produit rien. Le délai de 250 ms repart après chaque mouvement.
+Les suspensions temporaires (survol, focus, toucher) n'émettent pas
+`autoplay_toggle` : seul le bouton Pause/Reprendre émet cet événement.
+
+La page hôte doit conserver des titres, chemins et identifiants de widget
+sans donnée personnelle. L'adaptateur n'envoie ni paramètres d'URL ni fragment,
+ni texte de recherche, ni URL de notice, ni champs bibliographiques supplémentaires.

@@ -3,6 +3,27 @@
 Widget Web réutilisable pour valoriser sur des sites Web des
 **sélections bibliographiques constituées dans Koha**.
 
+## Démarrage rapide
+
+Avec Python 3.10+ et Node.js 22+, depuis la racine du dépôt :
+
+``` console
+python -m pip install -r requirements.txt
+python scripts/csv_to_json.py --skip-covers
+npm start
+```
+
+Ouvrir **http://127.0.0.1:4173/demo/index.html**. La démonstration propose
+six exemples, leur code HTML et un journal local des événements. `Ctrl+C`
+arrête le serveur. Aucun appel aux fournisseurs de couvertures n'est effectué
+avec `--skip-covers` ; les images sont alors remplacées par des placeholders.
+
+Le **[guide d'utilisation](docs/UTILISATION.md)** détaille la préparation
+des données, l'intégration dans un site, les réglages, la personnalisation,
+Matomo, la publication et la mise à jour quotidienne.
+
+## Principe
+
 Le projet transforme un export CSV Koha en ressources statiques prêtes à
 être publiées :
 
@@ -277,7 +298,7 @@ koha-list-widget:interaction
 L'adaptateur `koha-list-widget-matomo.js` le traduit ensuite en événements
 Matomo.
 
-Interactions prévues :
+Interactions disponibles :
 
 ``` text
 document_click
@@ -291,6 +312,115 @@ Les déplacements automatiques du carrousel ne sont pas comptabilisés
 comme des interactions utilisateur.
 
 ## Développement avec Codex
+
+### Web Component et démonstration
+
+Les quatre modes, la recherche, le tri, la pagination, le repli, l'export
+et l'autoplay sont disponibles dans `widget/koha-list-widget.js`.
+Charger ce fichier avec `type="module"`, puis utiliser `src` et `list_id`
+comme dans l'exemple ci-dessus. Le navigateur utilise les ressources
+générées par Python. Il ne requiert aucune dépendance JavaScript.
+
+Pour lancer la démo et les tests (Node.js 22 ou ultérieur) :
+
+``` console
+npm install
+npx playwright install chromium
+npm run check
+npm test
+npm start
+```
+
+Ouvrir ensuite `http://127.0.0.1:4173`. Générer d'abord `data/data.json`
+avec le script Python si nécessaire ; `--skip-covers` évite tout appel aux
+fournisseurs. La démo présente les quatre modes et deux exemples d'autoplay.
+La feuille `widget/koha-list-widget-custom.css` fournit une personnalisation
+via les variables CSS et `::part()`.
+
+Les cinq événements génériques et l'adaptateur Matomo facultatif sont disponibles.
+Charger `widget/koha-list-widget-matomo.js` pour mettre les interactions dans
+la file `_paq`. Le site hôte configure et charge son propre tracker Matomo.
+Sans adaptateur, le widget fonctionne et émet ses événements sans suivi Matomo.
+Voir [le contrat et l'intégration analytics](docs/ANALYTICS.md).
+
+### Conversion CSV → JSON et Excel
+
+Avec Python 3.10 ou ultérieur, depuis la racine du dépôt :
+
+``` console
+python -m pip install -r requirements.txt
+python scripts/csv_to_json.py
+python -m unittest discover -s tests -v
+```
+
+La conversion lit `data/data.csv` (UTF-8, BOM facultatif, séparateur `;`)
+et produit `data/data.json` ainsi que `exports/liste-{list_id}.xlsx`.
+Ces fichiers générés sont ignorés par Git. Les chemins par défaut sont
+relatifs au dépôt, même si la commande est lancée depuis un autre dossier.
+
+Pour choisir les chemins :
+
+``` console
+python scripts/csv_to_json.py --input data/data.csv --output data/data.json --exports-dir exports --delimiter ";"
+```
+
+Les en-têtes canoniques sont obligatoires ; les cellules bibliographiques
+facultatives peuvent être vides. Un identifiant invalide, une ligne mal
+formée ou des métadonnées contradictoires pour une même liste arrêtent la
+conversion avant la génération des exports. Un `holdings` invalide est
+signalé avec la ligne et la notice, puis remplacé par `[]`. Les propriétés
+des objets `holdings` sont textuelles et peuvent être absentes.
+
+Toutes les lignes sont conservées, sans filtrage sur `opac_suppressed` ni
+déduplication. L'ordre du CSV est conservé dans les exports. Les liens vers
+les XLSX sont relatifs au dossier du JSON.
+
+Le JSON et chaque XLSX sont remplacés individuellement après une écriture
+réussie. Si un export échoue, les autres listes et le JSON sont produits,
+mais aucun `export_xlsx` n'est annoncé pour la liste concernée ; la commande
+retourne un code d'échec. Une cellule dépassant la limite Excel de 32 767
+caractères entraîne cette même politique, sans troncature silencieuse ; le
+texte intégral reste dans le JSON. Les anciens exports ne sont pas purgés.
+
+La conversion récupère désormais les couvertures : `cover_url` est
+prioritaire, puis les fournisseurs Google Books, BnF et Amazon sont essayés
+dans cet ordre. Les images validées sont converties en JPEG dans `covers/`.
+Le JSON conserve `cover_url` et expose le chemin relatif `local_cover_url`.
+Le cache mémorise la source, la date de récupération et, pour `cover_url`,
+l'URL ayant produit l'image. Les notices présentes dans plusieurs listes
+ne sont téléchargées qu'une fois par exécution.
+
+``` console
+python scripts/csv_to_json.py --cover-source bnf --cover-source google
+python scripts/csv_to_json.py --skip-covers
+python scripts/probe_covers.py --sample 3
+```
+
+`--cover-source` peut être répété pour choisir l'ordre des fournisseurs ;
+une `cover_url` est toujours prioritaire. `--covers-dir` choisit le dossier
+des images et du cache. `--cover-timeout` fixe le délai réseau en secondes
+(10 par défaut), `--cover-delay` l'intervalle minimal entre requêtes
+(0,3 seconde par défaut). `--skip-covers` désactive entièrement ce traitement,
+avec des `local_cover_url` vides dans le JSON produit.
+
+Une clé Google Books peut être fournie par la variable d'environnement
+`GOOGLE_BOOKS_API_KEY` ; elle n'est ni affichée dans les journaux ni enregistrée
+dans le cache. Les HTTP 401/403/429 suspendent le fournisseur pour le reste
+de l'exécution. Les erreurs réseau et HTTP 5xx seront retentées au prochain
+lancement ; seules les absences explicites alimentent le cache négatif des
+fournisseurs. `--retry-missing-covers` permet de réinitialiser ce dernier.
+Les échecs de `cover_url` ne sont jamais mémorisés dans le cache négatif.
+
+Le script `probe_covers.py` teste chaque fournisseur séparément sur un petit
+échantillon, sans modifier le JSON, les exports ou le cache de production.
+Il écrit ses images et son rapport dans un nouveau sous-dossier de
+`cover-probe/`. Il retourne 1 si au moins un fournisseur ne fournit aucune
+image dans l'échantillon : consulter les journaux pour distinguer absence
+de couverture, quota et erreur réseau. La conversion principale continue
+à produire JSON/XLSX même lorsque toutes les couvertures échouent.
+
+Voir [la documentation des couvertures](docs/COVERS.md) pour les endpoints
+utilisés et les limites des fournisseurs.
 
 Avant toute modification importante :
 
@@ -314,6 +444,8 @@ koha-list-widget:interaction
 
 ## Statut
 
-Le projet est spécifié fonctionnellement. Le PRD et les documents du
-dossier `docs/` définissent le comportement cible à utiliser pour
-l'implémentation et les tests.
+Le traitement CSV → JSON/XLSX, les couvertures, le Web Component, les
+événements, l'adaptateur Matomo et la démonstration sont implémentés.
+Les instructions de livraison figurent dans [UTILISATION.md](docs/UTILISATION.md).
+La validation BnF après sa panne, la réception sur le serveur Matomo du site
+et les contrôles manuels de compatibilité/accessibilité restent à effectuer.

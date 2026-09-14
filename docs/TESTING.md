@@ -163,3 +163,77 @@ visibilty
 
 Ils ne doivent pas apparaître dans le contrat public ou le modèle de
 données.
+
+## 13. Tests navigateur de l'étape 4
+
+Prérequis de développement : Node.js 22 ou ultérieur.
+
+Sous Linux/WSL, installer aussi les dépendances système de Chromium avec
+`npx playwright install-deps chromium`, dans le terminal Linux utilisé pour
+les tests. Une erreur de lancement mentionnant `libnspr4.so` manquante a été
+résolue ainsi sur ce projet. Voir le
+[dépannage WSL du guide d'utilisation](UTILISATION.md#tests-sous-wsl--bibliothèques-linux-manquantes).
+
+Si un lancement échoue avant l'ouverture du navigateur, lire la première
+erreur du rapport. Le contrôle des erreurs JavaScript en fin de test ne peut
+pas s'exécuter si la page n'a pas été créée ; il conserve alors l'échec initial.
+Vérifier `node --version` dans le terminal utilisé pour `npm test`. Si le
+rapport indique que l'exécutable Chromium est absent, exécuter
+`npx playwright install chromium` avec cette même installation de Node.
+
+``` console
+npm install
+npx playwright install chromium
+npm run check
+npm test
+```
+
+Playwright lance automatiquement le serveur local de test. Les scénarios
+s'exécutent dans Chromium sur ordinateur et avec le profil mobile Pixel 7.
+Ils utilisent des données locales simulées, sans appeler les fournisseurs
+de couvertures. Les contrôles axe complètent les tests clavier et de focus.
+L'horloge simulée permet de vérifier les délais et suspensions de l'autoplay.
+
+Le test de démonstration utilise `data/data.json` lorsqu'il est présent et
+enregistre des captures de chaque mode dans `test-results/`. Il est ignoré
+si ce fichier généré est absent. Pour l'inclure sans solliciter les API :
+
+``` console
+python scripts/csv_to_json.py --skip-covers
+npm test
+```
+
+Les traces des échecs sont conservées dans `test-results/`. Les tests
+automatisés ne remplacent pas une vérification avec un lecteur d'écran,
+un véritable écran tactile, Firefox et Safari. Ces contrôles manuels
+restent à effectuer.
+
+## 14. Tests analytics de l'étape 5
+
+`tests/analytics.spec.js` vérifie les clics dans les quatre modes, le clavier,
+le clic central, le contexte commun, les identifiants d'instance et les
+positions globales après tri et recherche. La pagination distingue haut/bas
+et précédent/suivant/numéro de page. Le carrousel attend sa stabilisation,
+compte les cartes partiellement visibles et ignore autoplay, gestes sans
+déplacement, défilements programmatiques et changements de rendu.
+
+Les tests de l'adaptateur utilisent uniquement une file `_paq` locale :
+cinq actions, format déterministe, champs supplémentaires ignorés, données
+invalides rejetées, double chargement, tracker existant et tracker en panne.
+Aucune donnée n'est envoyée à un serveur Matomo.
+
+``` console
+npx playwright test tests/analytics.spec.js
+```
+
+La réception dans un véritable tableau de bord Matomo reste à vérifier
+sur le site hôte, avec sa configuration et sa politique de consentement.
+
+## 15. Livraison et démonstration
+
+Suivre le démarrage de [UTILISATION.md](UTILISATION.md), puis parcourir les
+six exemples de la démo et leur code HTML. `tests/demo.spec.js` vérifie aussi
+l'ouverture depuis la racine du serveur, le journal local et son effacement,
+le cas où le JSON manque, et les téléchargements XLSX générés. Le scénario
+avec données réelles nécessite la conversion préalable ; les scénarios de
+journal et de JSON absent sont autonomes.

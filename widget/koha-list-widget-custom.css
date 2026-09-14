@@ -1,0 +1,12 @@
+/* Charger cette feuille dans la page hôte, après la définition du composant.
+   Les variables et ::part() ne dépendent pas de la structure interne. */
+koha-list-widget {
+  --koha-accent: #215a73;
+  --koha-focus: #b45105;
+  --koha-radius: .5rem;
+  --koha-gap: 1rem;
+}
+
+koha-list-widget::part(list-name) { font-weight: 650; }
+koha-list-widget::part(list-description) { max-width: 70ch; }
+koha-list-widget::part(book-link):focus-visible { outline-offset: 2px; }

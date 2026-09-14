@@ -1,0 +1,17 @@
+{
+  "name": "koha-list-widget",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node scripts/serve.mjs",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "check": "node --check widget/koha-list-widget.js && node --check widget/koha-list-widget-matomo.js && node --check demo/demo.js && node --check scripts/serve.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@axe-core/playwright": "^4.10.0"
+  }
+}

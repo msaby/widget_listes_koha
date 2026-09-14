@@ -190,3 +190,34 @@ pagination-status autoplay-controls autoplay-toggle
 
 Émettre `koha-list-widget:interaction` avec les événements définis dans
 `ANALYTICS.md`. Ne jamais appeler `_paq` directement depuis ce fichier.
+
+## 13. Utilisation de l'implémentation
+
+Charger `widget/koha-list-widget.js` avec `type="module"`. Aucun build ni
+framework n'est nécessaire. Le composant réagit aux changements de ses
+attributs ; un changement de source annule le chargement précédent. Les
+chemins `local_cover_url` et `export_xlsx` sont relatifs au JSON, et `src`
+est relatif à la page hôte. Servir les fichiers en HTTP(S), avec CORS
+autorisé par le serveur de données si les origines diffèrent.
+
+La navigation clavier du carrousel utilise Gauche/Droite et Début/Fin.
+L'autoplay avance d'une carte à la fois et revient au début après la fin ;
+il est également suspendu lorsque l'onglet du navigateur est masqué.
+Une interaction terminée laisse passer un délai complet avant reprise.
+La pause explicite est conservée lors des changements de présentation.
+
+Les numéros de pagination sont regroupés autour de la page courante, avec
+accès à la première et à la dernière page. Lorsque le bouton utilisé devient
+désactivé, le focus passe au numéro de la page courante dans la même barre.
+La recherche attend 180 ms après la saisie avant de mettre à jour les résultats.
+
+Le bouton de sortie crée une cible de focus dans le DOM principal juste
+après le composant. Cette cible est supprimée à la déconnexion du widget.
+
+`widget/koha-list-widget-custom.css` illustre l'utilisation des variables
+`--koha-accent`, `--koha-focus`, `--koha-radius`, `--koha-gap` et des Shadow
+Parts. Les parties `export` et `pagination-bottom` complètent celles du PRD.
+
+Les quatre affichages et leurs contrôles sont implémentés à l'étape 4.
+L'étape 5 ajoute les cinq événements génériques et l'adaptateur Matomo
+facultatif. Voir `ANALYTICS.md` pour les détails et l'intégration.
