@@ -44,9 +44,10 @@ class ProviderBlocked(CoverError):
     """Authentification, protection ou quota : suspendre ce fournisseur."""
 
 
-def identifiers(document):
-    """Préférer l'ISBN ; utiliser l'EAN si l'ISBN est absent ou invalide."""
-    for field in ("isbn", "ean"):
+def identifiers(document, *, prefer_ean=False):
+    """Extraire un identifiant valide, avec une priorité configurable."""
+    fields = ("ean", "isbn") if prefer_ean else ("isbn", "ean")
+    for field in fields:
         # On recherche dans l'ISBN avant l'EAN. Le return du premier identifiant
         # valide empêche d'utiliser un EAN différent quand l'ISBN convient déjà.
         text = (document.get(field) or "").replace("-", "")
@@ -67,7 +68,7 @@ def identifiers(document):
                 valid = sum((10 if c == "X" else int(c)) * (10 - i)
                             for i, c in enumerate(value)) % 11 == 0
             if valid:
-                return [value]
+                return [isbn13(value) if prefer_ean and len(value) == 10 else value]
     return []
 
 
@@ -95,7 +96,7 @@ def isbn10(value):
     return base + ("X" if check == 10 else str(check))
 
 
-def jpeg_bytes(data):
+def jpeg_bytes(data, max_size=None):
     """Décoder réellement l'image et rejeter HTML, images cassées et pixels vides."""
     try:
         with warnings.catch_warnings():
@@ -109,6 +110,8 @@ def jpeg_bytes(data):
                     raise MissingCover("image trop petite (placeholder possible)")
                 image.load()
                 rgba = ImageOps.exif_transpose(image).convert("RGBA")
+                if max_size and (rgba.width > max_size[0] or rgba.height > max_size[1]):
+                    rgba.thumbnail(max_size, Image.Resampling.LANCZOS)
                 # JPEG ne gère pas la transparence : poser l'image RGBA (couleurs +
                 # canal alpha) sur du blanc évite un fond noir. EXIF donne l'orientation.
                 background = Image.new("RGB", rgba.size, "white")
@@ -216,7 +219,9 @@ class CoverManager:
         # Cette méthode retourne des octets JPEG validés ; elle n'écrit pas le cache.
         # La BnF accepte aussi les EAN non livres. Google et Amazon sont ici limités
         # aux identifiants de livres ; seul Amazon reçoit une conversion en ISBN-10.
-        candidates = ids if source == "bnf" else [value for value in ids if len(value) == 10 or value.startswith(("978", "979"))]
+        candidates = ([isbn13(value) if len(value) == 10 else value for value in ids]
+                  if source == "bnf" else
+                  [value for value in ids if len(value) == 10 or value.startswith(("978", "979"))])
         if source == "amazon":
             # map applique isbn10 à chaque candidat, filter enlève les None,
             # puis dict.fromkeys élimine d'éventuels doublons après conversion.
@@ -256,14 +261,15 @@ class CoverManager:
                 elif source == "bnf":
                     # La BnF renvoie directement une image. urlencode protège les
                     # valeurs des paramètres et assemble la partie située après le ?.
-                    query = {"EAN" if len(value) == 13 else "ISBN": value,
-                             "couverture": "1", "taille": "originale", "hauteur": 600}
+                    query = {"EAN": value, "couverture": "1", "taille": "originale",
+                             "largeur": 500, "hauteur": 500}
                     urls = [BNF_ENDPOINT + "?" + urlencode(query)]
                 else:
                     urls = [f"https://images-na.ssl-images-amazon.com/images/P/{value}.01.LZZZZZZZ.jpg"]
                 for url in urls:
                     try:
-                        return jpeg_bytes(self.fetch(url))
+                        limit = (500, 500) if source in ("google", "amazon") else None
+                        return jpeg_bytes(self.fetch(url), max_size=limit)
                     except MissingCover as exc:
                         last_missing = str(exc)
                         continue
@@ -322,19 +328,20 @@ class CoverManager:
         for source in self.sources:
             if source in self.blocked:
                 continue
+            source_ids = identifiers(document, prefer_ean=True) if source == "bnf" else ids
             key = f"{source}:{number}"
             negative = self.cache["negative"].get(key)
             # Les nouvelles entrées négatives contiennent les identifiants essayés.
             # Si ceux-ci changent, il faut réinterroger le fournisseur. True est
             # l'ancien format de cache, conservé pour compatibilité.
-            if negative is True or (isinstance(negative, dict) and negative.get("identifiers") == ids):
+            if negative is True or (isinstance(negative, dict) and negative.get("identifiers") == source_ids):
                 self.stats["negative_hits"] += 1
                 continue
             try:
-                data = self.provider_image(source, ids)
+                data = self.provider_image(source, source_ids)
                 return self.store(number, path, data, source)
             except MissingCover as exc:
-                self.cache["negative"][key] = {"identifiers": ids}
+                self.cache["negative"][key] = {"identifiers": source_ids}
                 self.stats[f"{source}_missing"] += 1
                 LOGGER.info("Notice %s : %s : %s", number, source, exc)
             except ProviderBlocked as exc:

@@ -139,17 +139,24 @@ conversion si son préfixe est 978, aucune requête Amazon s'il commence par
 979 (ou tout autre préfixe non convertible). La comparaison des résultats Google peut utiliser
 l'équivalence ISBN-10/ISBN-13, sans changer l'identifiant de la requête.
 
+Les images téléchargées depuis Google Books ou Amazon sont redimensionnées
+proportionnellement si leur largeur ou leur hauteur dépasse 500 pixels. La
+dimension maximale enregistrée est donc `500x500`. Les images BnF et les URLs
+de couverture explicites ne sont pas redimensionnées par cette règle.
+
 - Google Books : recherche `isbn:` via
   `https://www.googleapis.com/books/v1/volumes`, puis téléchargement de
   l'image d'un résultat dont l'ISBN correspond. La variable d'environnement
   `GOOGLE_BOOKS_API_KEY` permet d'ajouter une clé. Voir la
   [documentation Google Books](https://developers.google.com/books/docs/v1/using).
-- BnF : requête `EAN` ou `ISBN` vers
+- BnF : requête `EAN` vers
   `https://openapi.bnf.fr/couverture/image/image/recupererImage`, avec
-  `couverture=1`, `taille=originale` et `hauteur=600`. Cet endpoint est
-  documenté en version bêta. La BnF signale qu'une absence d'image peut
-  actuellement produire un HTTP 500 ; le script conserve ces erreurs comme
-  retentables pour éviter de mémoriser une panne comme une absence définitive.
+  `couverture=1`, `taille=originale`, `largeur=500` et `hauteur=500`. L'EAN
+  est prioritaire sur l'ISBN ; un ISBN-10 est converti en ISBN-13 avant la
+  requête. Cet endpoint est documenté en version bêta. La BnF signale qu'une
+  absence d'image peut actuellement produire un HTTP 500 ; le script conserve
+  ces erreurs comme retentables pour éviter de mémoriser une panne comme une
+  absence définitive.
   Voir la [documentation BnF](https://api.bnf.fr/fr/api-service-couvertures-du-catalogue-general).
 - Amazon : essai du service d'images historique
   `https://images-na.ssl-images-amazon.com/images/P/{ISBN10}.01.LZZZZZZZ.jpg`.

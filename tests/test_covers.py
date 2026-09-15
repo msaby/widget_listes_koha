@@ -202,8 +202,16 @@ class CoverTests(unittest.TestCase):
         with self.assertRaises(MissingCover):
             jpeg_bytes(image_bytes(size=(1, 1)))
 
+    def test_google_and_amazon_images_are_limited_to_500_pixels(self):
+        large = image_bytes(size=(1000, 600))
+        resized = jpeg_bytes(large, max_size=(500, 500))
+        with Image.open(BytesIO(resized)) as image:
+            self.assertEqual(image.size, (500, 300))
+
     def test_identifier_normalization_and_amazon_conversion(self):
         self.assertEqual(identifiers(self.document), ["9782765409779"])
+        self.assertEqual(identifiers({"isbn": "2765409773", "ean": "9782309508128"}, prefer_ean=True), ["9782309508128"])
+        self.assertEqual(identifiers({"isbn": "2765409773", "ean": ""}, prefer_ean=True), ["9782765409779"])
         self.assertEqual(isbn10("9782765409779"), "2765409773")
         self.assertEqual(isbn13("2765409773"), "9782765409779")
         self.assertIsNone(isbn10("9791234567896"))
@@ -258,7 +266,7 @@ class CoverTests(unittest.TestCase):
         self.assertIn("isbn%3A2765409773", manager.fetch.call_args.args[0])
         manager.fetch = Mock(return_value=self.png)
         manager.provider_image("bnf", ["2765409773"])
-        self.assertIn("ISBN=2765409773", manager.fetch.call_args.args[0])
+        self.assertIn("EAN=9782765409779", manager.fetch.call_args.args[0])
         manager.fetch.reset_mock()
         with self.assertRaises(MissingCover):
             manager.provider_image("amazon", ["9791234567896"])
@@ -274,7 +282,8 @@ class CoverTests(unittest.TestCase):
         self.assertEqual(manager.fetch.call_args_list[1].args[0], "https://books.google.com/image")
         manager.fetch = Mock(return_value=self.png)
         manager.provider_image("bnf", ["9782765409779"])
-        self.assertIn("EAN=9782765409779", manager.fetch.call_args.args[0])
+        self.assertEqual(manager.fetch.call_args.args[0],
+                 "https://openapi.bnf.fr/couverture/image/image/recupererImage?EAN=9782765409779&couverture=1&taille=originale&largeur=500&hauteur=500")
         manager.provider_image("amazon", ["9782765409779"])
         self.assertIn("/2765409773.01.LZZZZZZZ.jpg", manager.fetch.call_args.args[0])
 
