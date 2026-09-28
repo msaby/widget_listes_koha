@@ -120,6 +120,8 @@ test('affichage de l’éditeur réduit au premier et sans termes génériques',
     ['Librairie Gallimard | Édition seconde', 'Gallimard, 2001'],
     ['Libr. du Nord | Éditions du Sud', 'du Nord, 2002'],
     ['Maison d’édition | Suite', 'Maison d’, 2003'],
+    ['PUBLISHER ÉDITEUR Éditions Atlas | Autre', 'Atlas, 2004'],
+    ['publishing editeur editions ÉdItIon Éditions Boréal | Autre', 'Boréal, 2005'],
   ];
   const data = { ...payload, documents: publishers.map(([publisher], index) => ({ ...documents[index], publisher })) };
   for (const display of ['compact', 'grid']) {
