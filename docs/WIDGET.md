@@ -149,6 +149,9 @@ Positions analytiques globales. Le focus reste dans le contrôle utilisé.
 
 Titre/description restent visibles. Utiliser `hidden`, `aria-expanded`,
 `aria-controls`.
+Le bouton sans bordure affiche « Replier la sélection » avec un chevron vers
+le haut lorsque la sélection est ouverte, et « Afficher la sélection » avec un
+chevron vers le bas lorsqu'elle est repliée. Le focus clavier reste visible.
 
 ## 9. Autoplay
 

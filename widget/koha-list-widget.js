@@ -59,6 +59,8 @@ button,input { font:inherit; color:inherit; }
 button { border:1px solid var(--koha-border,#bac5cc); border-radius:.35rem; padding:.55rem .85rem; background:var(--koha-surface,#fff); min-height:44px; }
 button { cursor:pointer; }
 button:hover:not(:disabled) { background:var(--koha-hover,#edf3f6); }
+.visibility-toggle { border:0; background:transparent; color:var(--koha-accent,#215a73); }
+.visibility-toggle:hover:not(:disabled) { background:var(--koha-hover,#edf3f6); }
 .results-controls { display:flex; align-items:center; justify-content:space-between; gap:.5rem 1rem; flex-wrap:wrap; margin:.75rem 0; }
 .results-controls .pagination { margin:0; }
 .export { color:var(--koha-muted,#495b67); font-size:.875em; text-decoration:none; white-space:nowrap; }
@@ -323,15 +325,19 @@ export class KohaListWidget extends HTMLElement {
     // visibles lorsqu'on replie les documents avec la propriété HTML hidden.
     if (['collapsed', 'collapsible'].includes(this.getAttribute('visibility'))) {
       const controls = element('div', { class: 'controls', part: 'visibility-controls' });
-      this.visibilityButton = element('button', { type: 'button', part: 'visibility-toggle', 'data-focus': 'visibility',
-        'aria-expanded': String(!this.collapsed), 'aria-controls': 'collapsible-content' }, this.collapsed ? 'Afficher les documents' : 'Masquer les documents');
+      this.visibilityButton = element('button', { type: 'button', class: 'visibility-toggle', part: 'visibility-toggle', 'data-focus': 'visibility',
+        'aria-expanded': String(!this.collapsed), 'aria-controls': 'collapsible-content' });
+      const updateVisibilityLabel = () => this.visibilityButton.replaceChildren(
+        element('span', { class: 'action-icon', 'aria-hidden': 'true' }, this.collapsed ? '⌄' : '⌃'),
+        this.collapsed ? 'Afficher la sélection' : 'Replier la sélection');
+      updateVisibilityLabel();
       this.visibilityButton.addEventListener('click', () => {
         // aria-expanded annonce l'état ; aria-controls relie le bouton au contenu.
         // Modifier hidden retire aussi les éléments repliés de la navigation clavier.
         this.collapsed = !this.collapsed;
         this.content.hidden = this.collapsed;
         this.visibilityButton.setAttribute('aria-expanded', String(!this.collapsed));
-        this.visibilityButton.textContent = this.collapsed ? 'Afficher les documents' : 'Masquer les documents';
+        updateVisibilityLabel();
         this.live.textContent = this.collapsed ? 'Documents masqués.' : 'Documents affichés.';
         this.scheduleAutoplay?.();
       });

@@ -199,9 +199,12 @@ test('repli conserve nom et description, export complet reste indépendant', asy
   await expect(widget.getByRole('heading', { name: 'Fonds professionnels' })).toBeVisible();
   await expect(widget.getByText('Description de la sélection')).toBeVisible();
   await expect(widget.locator('[part="collapsible-content"]')).toBeHidden();
-  const toggle = widget.getByRole('button', { name: 'Afficher les documents' });
+  const toggle = widget.getByRole('button', { name: 'Afficher la sélection' });
+  await expect(toggle.locator('[aria-hidden="true"]')).toHaveText('⌄');
   await toggle.click();
   await expect(widget.locator('[part="visibility-toggle"]')).toHaveAttribute('aria-expanded', 'true');
+  await expect(toggle).toHaveAccessibleName('Replier la sélection');
+  await expect(toggle.locator('[aria-hidden="true"]')).toHaveText('⌃');
   await expect(widget.locator('[part="collapsible-content"]')).toBeVisible();
   const link = widget.getByRole('link', { name: 'Télécharger la liste complète au format Excel' });
   await expect(link.locator('[aria-hidden="true"]')).toHaveText('⤓');
