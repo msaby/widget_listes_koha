@@ -142,6 +142,7 @@ test('affichage des auteurs sans crochets ni préfixes, limité au premier', asy
     ['[Hélène]', 'Hélène'],
     ['[Irène] et [Jean]', 'Irène...'],
     ['[Kate] AND [Liam]', 'Kate...'],
+    ['[Marie] avec [Nadia]', 'Marie...'],
     ['Sandrine', 'Sandrine'],
   ];
   const data = { ...payload, documents: examples.map(([authors], index) => ({ ...documents[index], authors })) };

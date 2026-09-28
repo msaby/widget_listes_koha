@@ -69,7 +69,7 @@ Dans tous les modes, l'éditeur affiché est le premier avant `|`. Les mots
 « publisher », « publishers » et « publishing » sont retirés de cet affichage sans tenir
 compte de la casse ou des accents. La source et la recherche restent intactes.
 Pour les auteurs, les crochets `[` et `]` sont retirés, puis seul le premier
-nom avant `,`, `;`, `|`, « et » ou « and » est affiché. Si d'autres noms suivent, `...` est
+nom avant `,`, `;`, `|`, « et », « and » ou « avec » est affiché. Si d'autres noms suivent, `...` est
 ajouté. Les préfixes « par », « dir… par », « sous la dir… de »,
 « sous la dir… d’ » et « éd… par »
 sont retirés devant ce nom. La recherche et le tri gardent le champ source.
