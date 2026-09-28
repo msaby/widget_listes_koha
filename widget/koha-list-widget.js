@@ -55,10 +55,15 @@ h2,h3,p { margin:0; }
 .heading { font-size:1.4rem; margin-bottom:.5rem; }
 .description { margin-bottom:1rem; color:var(--koha-muted,#495b67); }
 .controls,.nav,.pagination { display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; margin:.75rem 0; }
-button,input,.export { font:inherit; color:inherit; }
-button,.export { border:1px solid var(--koha-border,#bac5cc); border-radius:.35rem; padding:.55rem .85rem; background:var(--koha-surface,#fff); min-height:44px; }
+button,input { font:inherit; color:inherit; }
+button { border:1px solid var(--koha-border,#bac5cc); border-radius:.35rem; padding:.55rem .85rem; background:var(--koha-surface,#fff); min-height:44px; }
 button { cursor:pointer; }
-button:hover:not(:disabled),.export:hover { background:var(--koha-hover,#edf3f6); }
+button:hover:not(:disabled) { background:var(--koha-hover,#edf3f6); }
+.results-controls { display:flex; align-items:center; justify-content:space-between; gap:.5rem 1rem; flex-wrap:wrap; margin:.75rem 0; }
+.results-controls .pagination { margin:0; }
+.export { color:var(--koha-muted,#495b67); font-size:.875em; text-decoration:none; white-space:nowrap; }
+.export:hover { color:var(--koha-accent,#215a73); text-decoration:underline; }
+.action-icon { display:inline-block; margin-inline-end:.4em; line-height:1; }
 button:disabled { cursor:default; opacity:.5; }
 button[aria-current=page] { background:var(--koha-accent,#215a73); color:white; border-color:var(--koha-accent,#215a73); }
 :is(a,button,input,[tabindex]):focus-visible { outline:3px solid var(--koha-focus,#b45105); outline-offset:3px; }
@@ -370,12 +375,15 @@ export class KohaListWidget extends HTMLElement {
     const exportUrl = url(this.metadata.export_xlsx, this.dataUrl);
     // Le téléchargement pointe vers l'Excel déjà produit par Python : il reste
     // complet, même si le widget affiche une page ou un résultat de recherche seulement.
-    if (this.getAttribute('export') === 'xlsx' && exportUrl) {
-      const link = element('a', { class: 'export', part: 'export', href: exportUrl, download: '', 'data-focus': 'export' }, 'Télécharger la liste complète au format Excel');
-      this.trackLink(link, 'excel_download');
-      toolbar.append(link);
-    }
+    const resultsControls = element('div', { class: 'results-controls', part: 'results-controls' });
     this.paginationTop = element('nav', { class: 'pagination', part: 'pagination pagination-top', 'aria-label': 'Pagination en haut de la sélection' });
+    resultsControls.append(this.paginationTop);
+    if (this.getAttribute('export') === 'xlsx' && exportUrl) {
+      const link = element('a', { class: 'export', part: 'export', href: exportUrl, download: '', 'data-focus': 'export' });
+      link.append(element('span', { class: 'action-icon', 'aria-hidden': 'true' }, '⤓'), 'Télécharger la liste complète au format Excel');
+      this.trackLink(link, 'excel_download');
+      resultsControls.append(link);
+    }
     this.paginationBottom = element('nav', { class: 'pagination', part: 'pagination pagination-bottom', 'aria-label': 'Pagination en bas de la sélection' });
     this.books = element('ul', { class: 'books', part: 'books', role: 'list' });
     if (this.mode === 'carousel') {
@@ -431,7 +439,7 @@ export class KohaListWidget extends HTMLElement {
         toolbar.append(controls);
       }
     }
-    this.content.append(this.paginationTop, this.books, this.paginationBottom);
+    this.content.append(resultsControls, this.books, this.paginationBottom);
     this.updateResults();
     if (focusKey) {
       const replacement = [...this.shadowRoot.querySelectorAll('[data-focus]')].find(node => node.dataset.focus === focusKey);
@@ -582,8 +590,9 @@ export class KohaListWidget extends HTMLElement {
     // aucun rythme permanent ne continue de tourner pendant une suspension.
     clearTimeout(this.autoplayTimer);
     if (this.autoplayButton) {
-      this.autoplayButton.textContent = this.motion?.matches ? 'Défilement automatique désactivé (mouvements réduits)'
+      const label = this.motion?.matches ? 'Défilement automatique désactivé (mouvements réduits)'
         : this.paused ? 'Reprendre le défilement' : 'Mettre en pause le défilement';
+      this.autoplayButton.replaceChildren(element('span', { class: 'action-icon', 'aria-hidden': 'true' }, this.paused ? '▶' : 'Ⅱ'), label);
       this.autoplayButton.disabled = Boolean(this.motion?.matches) || (this.results?.length || 0) < 2;
     }
     if (!this.isConnected || this.mode !== 'carousel' || !this.hasAttribute('autoplay') || this.motion?.matches

@@ -173,6 +173,10 @@ Si `export="xlsx"` et que la liste possède `export_xlsx`, afficher le
 bouton. Sinon aucun lien aveugle vers une ressource inexistante.
 
 Libellé : « Télécharger la liste complète au format Excel ».
+Le lien se place au-dessus des résultats, sur la même ligne que la pagination
+supérieure lorsqu'elle est visible. Il est présenté sans bordure, avec un texte
+plus petit et un symbole de téléchargement. Les boutons de pause et de reprise
+du carrousel affichent respectivement `Ⅱ` et `▶` devant leur libellé.
 
 ## 10 bis. Voir plus de résultats
 
@@ -198,6 +202,7 @@ search-controls search-input search-status search-empty skip-widget
 pagination pagination-top pagination-button pagination-previous
 pagination-next pagination-number pagination-current pagination-summary
 pagination-status autoplay-controls autoplay-toggle more-results
+results-controls
 ```
 
 ## 12. Événements

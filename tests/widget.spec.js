@@ -204,6 +204,8 @@ test('repli conserve nom et description, export complet reste indépendant', asy
   await expect(widget.locator('[part="visibility-toggle"]')).toHaveAttribute('aria-expanded', 'true');
   await expect(widget.locator('[part="collapsible-content"]')).toBeVisible();
   const link = widget.getByRole('link', { name: 'Télécharger la liste complète au format Excel' });
+  await expect(link.locator('[aria-hidden="true"]')).toHaveText('⤓');
+  await expect(widget.locator('[part="results-controls"]')).toContainText('Télécharger la liste complète au format Excel');
   await expect(link).toHaveAttribute('href', 'http://127.0.0.1:4173/exports/liste-11.xlsx');
   await widget.getByRole('searchbox').fill('43');
   await expect(widget.locator('.title')).toHaveText(['Document 43']);
@@ -283,7 +285,7 @@ test('pause explicite persistante et reprise après un délai complet', async ({
   await widget.locator('[part="autoplay-toggle"]').evaluate(node => node.click());
   await page.clock.runFor(4000);
   expect(await scrollLeft(widget)).toBe(0);
-  await expect(widget.locator('[part="autoplay-toggle"]')).toHaveText('Reprendre le défilement');
+  await expect(widget.locator('[part="autoplay-toggle"]')).toHaveText('▶Reprendre le défilement');
   await widget.locator('[part="autoplay-toggle"]').evaluate(node => node.click());
   await page.clock.runFor(900);
   expect(await scrollLeft(widget)).toBe(0);
