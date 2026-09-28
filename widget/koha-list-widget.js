@@ -69,10 +69,13 @@ button,input { font:inherit; color:inherit; }
 button { border:1px solid var(--koha-border,#bac5cc); border-radius:.35rem; padding:.55rem .85rem; background:var(--koha-surface,#fff); min-height:44px; }
 button { cursor:pointer; }
 button:hover:not(:disabled) { background:var(--koha-hover,#edf3f6); }
-.visibility-toggle { border:0; background:transparent; color:var(--koha-accent,#215a73); }
+.visibility-toggle { border:0; background:transparent; color:var(--koha-accent,#215a73); font-weight:600; }
+.visibility-toggle .action-icon { font-size:.7em; }
 .visibility-toggle:hover:not(:disabled) { background:var(--koha-hover,#edf3f6); }
-.results-controls { display:flex; align-items:center; justify-content:space-between; gap:.5rem 1rem; flex-wrap:wrap; margin:.75rem 0; }
-.results-controls .pagination { margin:0; }
+.results-controls { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:end; gap:.5rem 1rem; margin:.75rem 0; }
+.results-controls .pagination { min-width:0; margin:0; }
+.results-controls .nav { margin:0; }
+.results-controls .export { justify-self:end; }
 .export { color:var(--koha-muted,#495b67); font-size:.875em; text-decoration:none; white-space:nowrap; }
 .export:hover { color:var(--koha-accent,#215a73); text-decoration:underline; }
 .action-icon { display:inline-block; margin-inline-end:.4em; line-height:1; }
@@ -115,6 +118,7 @@ input { width:min(100%,28rem); min-width:0; min-height:44px; border:1px solid va
 .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; border:0; }
 .skip:not(:focus) { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); padding:0; border:0; }
 @media(max-width:600px) {
+ .results-controls { grid-template-columns:1fr; }
  .list .book-layout { grid-template-columns:90px minmax(0,1fr); }
  .list .cover { width:90px; height:130px; }
  .content { padding:.75rem; }
@@ -338,7 +342,7 @@ export class KohaListWidget extends HTMLElement {
       this.visibilityButton = element('button', { type: 'button', class: 'visibility-toggle', part: 'visibility-toggle', 'data-focus': 'visibility',
         'aria-expanded': String(!this.collapsed), 'aria-controls': 'collapsible-content' });
       const updateVisibilityLabel = () => this.visibilityButton.replaceChildren(
-        element('span', { class: 'action-icon', 'aria-hidden': 'true' }, this.collapsed ? '⌄' : '⌃'),
+        element('span', { class: 'action-icon', 'aria-hidden': 'true' }, this.collapsed ? '▶' : '▼'),
         this.collapsed ? 'Afficher la sélection' : 'Replier la sélection');
       updateVisibilityLabel();
       this.visibilityButton.addEventListener('click', () => {
@@ -409,7 +413,7 @@ export class KohaListWidget extends HTMLElement {
       this.previousButton.addEventListener('click', () => this.navigate(-1));
       this.nextButton.addEventListener('click', () => this.navigate(1));
       nav.append(this.previousButton, this.nextButton);
-      this.content.append(nav);
+      resultsControls.prepend(nav);
       this.books.tabIndex = 0;
       this.books.setAttribute('aria-label', 'Documents ; utilisez les flèches gauche et droite pour parcourir la sélection');
       this.books.addEventListener('keydown', event => {

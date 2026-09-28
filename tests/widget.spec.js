@@ -231,11 +231,11 @@ test('repli conserve nom et description, export complet reste indépendant', asy
   await expect(widget.getByText('Description de la sélection')).toBeVisible();
   await expect(widget.locator('[part="collapsible-content"]')).toBeHidden();
   const toggle = widget.getByRole('button', { name: 'Afficher la sélection' });
-  await expect(toggle.locator('[aria-hidden="true"]')).toHaveText('⌄');
+  await expect(toggle.locator('[aria-hidden="true"]')).toHaveText('▶');
   await toggle.click();
   await expect(widget.locator('[part="visibility-toggle"]')).toHaveAttribute('aria-expanded', 'true');
   await expect(toggle).toHaveAccessibleName('Replier la sélection');
-  await expect(toggle.locator('[aria-hidden="true"]')).toHaveText('⌃');
+  await expect(toggle.locator('[aria-hidden="true"]')).toHaveText('▼');
   await expect(widget.locator('[part="collapsible-content"]')).toBeVisible();
   const link = widget.getByRole('link', { name: 'Télécharger la liste complète au format Excel' });
   await expect(link.locator('[aria-hidden="true"]')).toHaveText('⤓');
@@ -246,6 +246,36 @@ test('repli conserve nom et description, export complet reste indépendant', asy
   await expect(link).toHaveAttribute('href', 'http://127.0.0.1:4173/exports/liste-11.xlsx');
   await widget.evaluate(node => node.setAttribute('visibility', 'invalid'));
   await expect(widget.locator('[part="visibility-toggle"]')).toHaveCount(0);
+});
+
+test('lien Excel aligné à droite et au bas de la pagination supérieure', async ({ page }) => {
+  const widget = await mount(page, { display: 'grid', limit: '30', paginate: '6', export: 'xlsx' });
+  const geometry = await widget.evaluate(node => {
+    const bounds = selector => node.shadowRoot.querySelector(selector).getBoundingClientRect();
+    const row = bounds('.results-controls');
+    const pagination = bounds('.pagination-top');
+    const link = bounds('.export');
+    return { rowRight: row.right, paginationBottom: pagination.bottom, linkRight: link.right, linkBottom: link.bottom };
+  });
+  expect(Math.abs(geometry.rowRight - geometry.linkRight)).toBeLessThan(2);
+  if (page.viewportSize().width > 600) {
+    expect(Math.abs(geometry.paginationBottom - geometry.linkBottom)).toBeLessThan(2);
+  }
+});
+
+test('flèches du carrousel alignées au bas du lien Excel', async ({ page }) => {
+  const widget = await mount(page, { display: 'carousel', export: 'xlsx' });
+  const geometry = await widget.evaluate(node => {
+    const bounds = selector => node.shadowRoot.querySelector(selector).getBoundingClientRect();
+    const row = bounds('.results-controls');
+    const nav = bounds('.results-controls .nav');
+    const link = bounds('.export');
+    return { rowRight: row.right, navBottom: nav.bottom, linkRight: link.right, linkBottom: link.bottom };
+  });
+  expect(Math.abs(geometry.rowRight - geometry.linkRight)).toBeLessThan(2);
+  if (page.viewportSize().width > 600) {
+    expect(Math.abs(geometry.navBottom - geometry.linkBottom)).toBeLessThan(2);
+  }
 });
 
 test('pas de lien Excel sans métadonnée et aucun état partagé entre instances', async ({ page }) => {

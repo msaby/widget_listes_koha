@@ -158,9 +158,10 @@ Positions analytiques globales. Le focus reste dans le contrôle utilisé.
 
 Titre/description restent visibles. Utiliser `hidden`, `aria-expanded`,
 `aria-controls`.
-Le bouton sans bordure affiche « Replier la sélection » avec un chevron vers
-le haut lorsque la sélection est ouverte, et « Afficher la sélection » avec un
-chevron vers le bas lorsqu'elle est repliée. Le focus clavier reste visible.
+Le bouton sans bordure affiche en gras « Replier la sélection » avec un
+triangle vers le bas lorsque la sélection est ouverte, et « Afficher la
+sélection » avec un triangle vers la droite lorsqu'elle est repliée, comme
+l'indicateur d'un élément HTML `summary`. Le focus clavier reste visible.
 
 ## 9. Autoplay
 
@@ -185,9 +186,10 @@ Si `export="xlsx"` et que la liste possède `export_xlsx`, afficher le
 bouton. Sinon aucun lien aveugle vers une ressource inexistante.
 
 Libellé : « Télécharger la liste complète au format Excel ».
-Le lien se place au-dessus des résultats, sur la même ligne que la pagination
-supérieure lorsqu'elle est visible. Il est présenté sans bordure, avec un texte
-plus petit et un symbole de téléchargement. Les boutons de pause et de reprise
+Le lien se place au-dessus des résultats, aligné sur le bord droit du widget
+et sur le bas de la pagination supérieure ou des flèches du carrousel. Il est
+présenté sans bordure, avec un texte plus petit et un symbole de téléchargement.
+Les boutons de pause et de reprise
 du carrousel affichent respectivement `Ⅱ` et `▶` devant leur libellé.
 
 ## 10 bis. Voir plus de résultats
