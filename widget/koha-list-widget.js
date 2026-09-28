@@ -106,11 +106,14 @@ input { width:min(100%,28rem); min-width:0; min-height:44px; border:1px solid va
 .list .book-layout { display:grid; grid-template-columns:120px minmax(0,1fr); }
 .list .cover { width:120px; height:170px; }
 .compact .books { display:grid; gap:0; }
-.compact .book-link { border:0; border-bottom:1px solid var(--koha-border,#bac5cc); border-radius:0; padding:.65rem .4rem; }
-.compact-row { display:flex; align-items:baseline; gap:.35rem; white-space:nowrap; overflow:hidden; }
-.compact-row .document-type { display:inline; flex:0 1 auto; max-width:15%; margin:0; overflow:hidden; text-overflow:ellipsis; }
-.compact-row .title { flex:1 1 45%; min-width:0; overflow:hidden; text-overflow:ellipsis; }
-.compact-row .authors,.compact-row .meta { flex:0 1 auto; max-width:23%; min-width:0; margin:0; overflow:hidden; text-overflow:ellipsis; }
+.compact .book-link { border:0; border-bottom:1px solid var(--koha-border,#bac5cc); border-radius:0; padding:.4rem .35rem; }
+.compact-row { min-width:0; }
+.compact-primary { display:flex; align-items:baseline; gap:.45rem; min-width:0; white-space:nowrap; }
+.compact-primary .document-type { flex:0 0 auto; margin:0; font-size:.72rem; letter-spacing:.03em; text-transform:uppercase; color:var(--koha-muted,#495b67); }
+.compact-primary .title { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:1rem; }
+.compact-details { display:block; margin-top:.1rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--koha-muted,#495b67); font-size:.88rem; line-height:1.3; }
+.compact-details .authors,.compact-details .meta { display:inline; margin:0; font-size:inherit; color:inherit; }
+.compact-details .authors + .meta::before { content:' · '; }
 .empty,.message { padding:1rem 0; }
 .summary { margin-inline-start:.5rem; color:var(--koha-muted,#495b67); }
 .more-results { display:inline-block; margin-top:1rem; color:var(--koha-accent,#215a73); }
@@ -122,8 +125,6 @@ input { width:min(100%,28rem); min-width:0; min-height:44px; border:1px solid va
  .list .book-layout { grid-template-columns:90px minmax(0,1fr); }
  .list .cover { width:90px; height:130px; }
  .content { padding:.75rem; }
- .compact-row .title { flex-basis:55%; }
- .compact-row .authors,.compact-row .meta { max-width:18%; }
 }
 @media(prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto !important; animation:none !important; transition:none !important; } }
 `;
@@ -683,6 +684,9 @@ export class KohaListWidget extends HTMLElement {
     const layout = element('div', { class: compact ? 'compact-row' : 'book-layout', part: compact ? 'book-layout compact-row' : 'book-layout' });
     const content = compact ? layout : element('div', { class: 'content', part: 'content' });
     if (compact) layout.part.add('content');
+    const primary = compact ? element('div', { class: 'compact-primary' }) : null;
+    const details = compact ? element('div', { class: 'compact-details' }) : null;
+    if (compact) layout.append(primary, details);
     if (!compact) {
       // Le mode compact ne crée pas de zone de couverture, même vide.
       // Une image décorative a alt="" pour ne pas répéter le titre déjà lu dans le lien.
@@ -706,12 +710,12 @@ export class KohaListWidget extends HTMLElement {
       if (full.length > maximum && !compact) {
         node.append(element('span', { 'aria-hidden': 'true' }, full.slice(0, keep) + '...'), element('span', { class: 'sr-only' }, full));
       } else node.textContent = full;
-      content.append(node);
+      (compact ? (part === 'document-type' || part === 'title' ? primary : details) : content).append(node);
     };
-    append('span', 'document-type', text(doc.document_type) + (compact && doc.document_type ? ' |' : ''));
+    append('span', 'document-type', text(doc.document_type));
     append(compact ? 'span' : 'h3', 'title', title, this.mode === 'list' ? 240 : 140);
     const authors = displayAuthors(doc.authors);
-    append('span', 'authors', (compact && authors ? '— ' : '') + authors, this.mode === 'list' ? 200 : 60, 61);
+    append('span', 'authors', authors, this.mode === 'list' ? 200 : 60, 61);
     const publisher = displayPublisher(doc.publisher);
     const maximum = this.mode === 'list' ? 200 : 60;
     const meta = element('span', { class: 'meta', part: 'meta' });
@@ -719,8 +723,8 @@ export class KohaListWidget extends HTMLElement {
     if (fullMeta) {
       if (!compact && publisher.length > maximum) {
         meta.append(element('span', { 'aria-hidden': 'true' }, [publisher.slice(0, 61) + '...', text(doc.date)].filter(Boolean).join(', ')), element('span', { class: 'sr-only' }, fullMeta));
-      } else meta.textContent = (compact ? '— ' : '') + fullMeta;
-      content.append(meta);
+      } else meta.textContent = compact ? [publisher, text(doc.date)].filter(Boolean).join(' · ') : fullMeta;
+      (compact ? details : content).append(meta);
     }
     link.append(layout, element('span', { class: 'sr-only' }, ' (nouvel onglet)'));
     item.append(link);
