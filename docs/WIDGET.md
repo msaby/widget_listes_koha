@@ -64,6 +64,10 @@ Ordre :
 Type | Titre : sous-titre — Auteur(s) — Éditeur, date
 ```
 
+Dans tous les modes, l'éditeur affiché est le premier avant `|`. Les mots
+« édition », « éditions », « librairie » et « libr. » sont retirés de cet
+affichage, sans modifier la source ni la recherche.
+
 CSS fondamental :
 
 ``` css

@@ -20,6 +20,9 @@ const normalized = value => text(value).normalize('NFD').replace(/\p{M}/gu, '').
 const integer = (value, fallback = null) => /^\d+$/.test(value ?? '') && Number.isSafeInteger(Number(value)) && Number(value) > 0 ? Number(value) : fallback;
 const titleKey = value => normalized(value).replace(/^(?:(?:le|la|les|un|une|des|the|a|an)\s+|l['’]\s*)/u, '');
 const publicationYear = value => Number(text(value).match(/(?:^|\D)(\d{4})(?:\D|$)/)?.[1]) || null;
+const displayPublisher = value => text(value).split('|', 1)[0]
+  .replace(/(?<!\p{L})(?:éditions?|editions?|librairie|libr\.?(?!\p{L}))(?!\p{L})/giu, '')
+  .replace(/\s+/g, ' ').replace(/^[\s,;:–—-]+|[\s,;:–—-]+$/g, '').trim();
 function url(value, base) {
   // Résoudre ../covers/a.jpg nécessite une URL de départ (base). On n'accepte
   // que HTTP(S), jamais un lien javascript: provenant des données reçues.
@@ -697,7 +700,7 @@ export class KohaListWidget extends HTMLElement {
     append('span', 'document-type', text(doc.document_type) + (compact && doc.document_type ? ' |' : ''));
     append(compact ? 'span' : 'h3', 'title', title, this.mode === 'list' ? 240 : 140);
     append('span', 'authors', (compact && doc.authors ? '— ' : '') + text(doc.authors), this.mode === 'list' ? 200 : 60, 61);
-    const publisher = text(doc.publisher);
+    const publisher = displayPublisher(doc.publisher);
     const maximum = this.mode === 'list' ? 200 : 60;
     const meta = element('span', { class: 'meta', part: 'meta' });
     const fullMeta = [publisher, text(doc.date)].filter(Boolean).join(', ');

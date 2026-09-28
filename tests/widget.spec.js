@@ -114,6 +114,20 @@ test('compact reste sur une ligne et conserve les textes longs', async ({ page }
   await expect(widget.locator('.book-link')).toHaveAccessibleName(new RegExp('Un titre particulièrement long'));
 });
 
+test('affichage de l’éditeur réduit au premier et sans termes génériques', async ({ page }) => {
+  const publishers = [
+    ['Éditions du Cercle | Autre éditeur', 'du Cercle, 2000'],
+    ['Librairie Gallimard | Édition seconde', 'Gallimard, 2001'],
+    ['Libr. du Nord | Éditions du Sud', 'du Nord, 2002'],
+    ['Maison d’édition | Suite', 'Maison d’, 2003'],
+  ];
+  const data = { ...payload, documents: publishers.map(([publisher], index) => ({ ...documents[index], publisher })) };
+  for (const display of ['compact', 'grid']) {
+    const widget = await mount(page, { display }, data);
+    await expect(widget.locator('.meta')).toHaveText(publishers.map(([, expected]) => display === 'compact' ? `— ${expected}` : expected));
+  }
+});
+
 test('contenu traité comme texte et couverture résolue depuis le JSON', async ({ page }) => {
   // Les données hostiles sont intentionnelles. Le test vérifie qu'elles restent
   // du texte et que le navigateur n'utilise pas l'URL de couverture du fournisseur.
