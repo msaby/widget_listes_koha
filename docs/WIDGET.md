@@ -66,7 +66,7 @@ Type | Titre : sous-titre — Auteur(s) — Éditeur, date
 
 Dans tous les modes, l'éditeur affiché est le premier avant `|`. Les mots
 « édition », « éditions », « éditeur », « librairie », « libr. »,
-« publisher » et « publishing » sont retirés de cet affichage sans tenir
+« publisher », « publishers » et « publishing » sont retirés de cet affichage sans tenir
 compte de la casse ou des accents. La source et la recherche restent intactes.
 Pour les auteurs, les crochets `[` et `]` sont retirés, puis seul le premier
 nom avant `,`, `;`, `|`, « et » ou « and » est affiché. Si d'autres noms suivent, `...` est

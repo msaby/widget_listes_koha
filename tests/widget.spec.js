@@ -122,6 +122,7 @@ test('affichage de l’éditeur réduit au premier et sans termes génériques',
     ['Maison d’édition | Suite', 'Maison d’, 2003'],
     ['PUBLISHER ÉDITEUR Éditions Atlas | Autre', 'Atlas, 2004'],
     ['publishing editeur editions ÉdItIon Éditions Boréal | Autre', 'Boréal, 2005'],
+    ['Morgan Kaufmann Publishers | Autre', 'Morgan Kaufmann, 2006'],
   ];
   const data = { ...payload, documents: publishers.map(([publisher], index) => ({ ...documents[index], publisher })) };
   for (const display of ['compact', 'grid']) {

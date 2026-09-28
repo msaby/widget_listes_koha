@@ -20,7 +20,7 @@ const normalized = value => text(value).normalize('NFD').replace(/\p{M}/gu, '').
 const integer = (value, fallback = null) => /^\d+$/.test(value ?? '') && Number.isSafeInteger(Number(value)) && Number(value) > 0 ? Number(value) : fallback;
 const titleKey = value => normalized(value).replace(/^(?:(?:le|la|les|un|une|des|the|a|an)\s+|l['’]\s*)/u, '');
 const publicationYear = value => Number(text(value).match(/(?:^|\D)(\d{4})(?:\D|$)/)?.[1]) || null;
-const PUBLISHER_WORDS = new Set(['edition', 'editions', 'editeur', 'editeurs', 'librairie', 'libr', 'publisher', 'publishing']);
+const PUBLISHER_WORDS = new Set(['edition', 'editions', 'editeur', 'editeurs', 'librairie', 'libr', 'publisher', 'publishers', 'publishing']);
 const displayPublisher = value => text(value).split('|', 1)[0]
   .replace(/[\p{L}\p{M}]+\.?/gu, word => PUBLISHER_WORDS.has(normalized(word.replace(/\.$/, ''))) ? '' : word)
   .replace(/\s+/g, ' ').replace(/^[\s,;:–—-]+|[\s,;:–—-]+$/g, '').trim();
