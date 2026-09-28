@@ -135,8 +135,13 @@ test('affichage des auteurs sans crochets ni préfixes, limité au premier', asy
     ['[par Alice], [Bob]', 'Alice...'],
     ['dirigé par [Clara]; David', 'Clara...'],
     ['sous la direction de [Élise] | Félix', 'Élise...'],
+    ['sous la direction d’[Émile] ; Félix', 'Émile...'],
+    ["sous la direction d'[Éva]", 'Éva'],
     ['éd. par [Gisèle]', 'Gisèle'],
     ['[Hélène]', 'Hélène'],
+    ['[Irène] et [Jean]', 'Irène...'],
+    ['[Kate] AND [Liam]', 'Kate...'],
+    ['Sandrine', 'Sandrine'],
   ];
   const data = { ...payload, documents: examples.map(([authors], index) => ({ ...documents[index], authors })) };
   for (const display of ['compact', 'grid']) {
