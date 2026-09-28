@@ -143,6 +143,7 @@ Exemple pour les ressources publiées sous `/selections/` :
   searchable
   show-list-name
   export="xlsx"
+  more-results-url="https://exameple.com"
   analytics-id="accueil-professionnel">
 </koha-list-widget>
 ```
@@ -164,6 +165,7 @@ module dans le modèle de page si les scripts des blocs sont supprimés.
 | `visibility` | `collapsible` pour commencer ouvert, `collapsed` pour commencer fermé. |
 | `autoplay`, `autoplay-delay` | Carrousel automatique, délai en millisecondes, 5000 par défaut. |
 | `export="xlsx"` | Afficher le lien vers l'Excel complet si les métadonnées l'annoncent. |
+| `more-results-url` | Afficher sous le widget « Voir plus de résultats » vers l'URL fournie. Accepte une URL HTTP(S), absolue ou relative à la page. |
 
 Les attributs booléens s'activent **par leur présence** : pour désactiver
 `autoplay`, retirer l'attribut ; `autoplay="false"` l'active quand même.

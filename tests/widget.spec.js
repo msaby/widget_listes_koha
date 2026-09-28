@@ -71,6 +71,19 @@ for (const mode of ['carousel', 'grid', 'list', 'compact']) {
   });
 }
 
+test('lien vers davantage de résultats fourni par la page hôte', async ({ page }) => {
+  const widget = await mount(page, { 'more-results-url': 'https://exameple.com', visibility: 'collapsed' });
+  const link = widget.getByRole('link', { name: 'Voir plus de résultats' });
+  await expect(link).toHaveAttribute('href', 'https://exameple.com/');
+  await expect(link).toBeVisible();
+  await widget.evaluate(node => node.setAttribute('more-results-url', '/autre-selection'));
+  await expect(link).toHaveAttribute('href', 'http://127.0.0.1:4173/autre-selection');
+  await widget.evaluate(node => node.setAttribute('more-results-url', 'javascript:alert(1)'));
+  await expect(link).toHaveCount(0);
+  await widget.evaluate(node => node.removeAttribute('more-results-url'));
+  await expect(link).toHaveCount(0);
+});
+
 test('sélection invalide silencieuse, liste vide et liste inconnue', async ({ page }) => {
   let widget = await mount(page, { list_id: null });
   await expect(widget.locator('section')).toHaveCount(0);

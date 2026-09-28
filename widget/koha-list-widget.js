@@ -93,6 +93,8 @@ input { width:min(100%,28rem); min-width:0; min-height:44px; border:1px solid va
 .compact-row .authors,.compact-row .meta { flex:0 1 auto; max-width:23%; min-width:0; margin:0; overflow:hidden; text-overflow:ellipsis; }
 .empty,.message { padding:1rem 0; }
 .summary { margin-inline-start:.5rem; color:var(--koha-muted,#495b67); }
+.more-results { display:inline-block; margin-top:1rem; color:var(--koha-accent,#215a73); }
+.more-results:hover { text-decoration-thickness:2px; }
 .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; border:0; }
 .skip:not(:focus) { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); padding:0; border:0; }
 @media(max-width:600px) {
@@ -109,7 +111,7 @@ export class KohaListWidget extends HTMLElement {
   // Seuls ces attributs déclenchent attributeChangedCallback quand ils sont modifiés.
   // Un attribut booléen comme searchable est activé par sa présence, même sans valeur.
   static observedAttributes = ['src', 'list_id', 'list', 'display', 'limit', 'paginate', 'sort',
-    'searchable', 'show-list-name', 'description', 'visibility', 'autoplay', 'autoplay-delay', 'export', 'analytics-id'];
+    'searchable', 'show-list-name', 'description', 'visibility', 'autoplay', 'autoplay-delay', 'export', 'analytics-id', 'more-results-url'];
 
   constructor() {
     // super() initialise HTMLElement. Le Shadow DOM « open » isole le rendu,
@@ -333,6 +335,11 @@ export class KohaListWidget extends HTMLElement {
     } else this.collapsed = false;
     this.content.hidden = this.collapsed;
     this.region.append(this.content);
+    const moreResultsUrl = url(this.getAttribute('more-results-url'), document.baseURI);
+    if (moreResultsUrl) {
+      this.region.append(element('a', { class: 'more-results', part: 'more-results', href: moreResultsUrl,
+        'data-focus': 'more-results' }, 'Voir plus de résultats'));
+    }
     const toolbar = element('div', { class: 'controls' });
     this.content.append(toolbar);
     this.searchStatus = null;

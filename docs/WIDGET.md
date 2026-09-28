@@ -18,6 +18,7 @@
   `autoplay`         non      false         carousel uniquement
   `autoplay-delay`   non      `5000`        ms, si autoplay
   `export`           non      ---           `xlsx`
+  `more-results-url` non      ---           URL du lien « Voir plus de résultats »
   `analytics-id`     non      ---           identifiant d'instance
 
 Si `list_id` manque ou n'est pas un entier positif valide, **ne rien
@@ -173,6 +174,19 @@ bouton. Sinon aucun lien aveugle vers une ressource inexistante.
 
 Libellé : « Télécharger la liste complète au format Excel ».
 
+## 10 bis. Voir plus de résultats
+
+Si `more-results-url` contient une URL HTTP(S) valide, afficher sous les
+résultats un lien « Voir plus de résultats » vers cette URL. Les URL relatives
+sont résolues par rapport à la page hôte. Le lien reste visible lorsque la
+sélection est repliée et ne modifie ni la pagination ni la recherche locale.
+Si l'attribut est absent, vide ou invalide, ne pas afficher le lien.
+
+``` html
+<koha-list-widget src="/selections/data/data.json" list_id="11"
+  more-results-url="https://exameple.com"></koha-list-widget>
+```
+
 ## 11. Shadow Parts
 
 ``` text
@@ -183,7 +197,7 @@ visibility-controls visibility-toggle collapsible-content
 search-controls search-input search-status search-empty skip-widget
 pagination pagination-top pagination-button pagination-previous
 pagination-next pagination-number pagination-current pagination-summary
-pagination-status autoplay-controls autoplay-toggle
+pagination-status autoplay-controls autoplay-toggle more-results
 ```
 
 ## 12. Événements
