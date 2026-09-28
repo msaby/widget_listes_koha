@@ -67,6 +67,10 @@ Type | Titre : sous-titre — Auteur(s) — Éditeur, date
 Dans tous les modes, l'éditeur affiché est le premier avant `|`. Les mots
 « édition », « éditions », « librairie » et « libr. » sont retirés de cet
 affichage, sans modifier la source ni la recherche.
+Pour les auteurs, les crochets `[` et `]` sont retirés, puis seul le premier
+nom avant `,`, `;` ou `|` est affiché. Si d'autres noms suivent, `...` est
+ajouté. Les préfixes « par », « dir… par », « sous la dir… de » et « éd… par »
+sont retirés devant ce nom. La recherche et le tri gardent le champ source.
 
 CSS fondamental :
 

@@ -128,6 +128,21 @@ test('affichage de l’éditeur réduit au premier et sans termes génériques',
   }
 });
 
+test('affichage des auteurs sans crochets ni préfixes, limité au premier', async ({ page }) => {
+  const examples = [
+    ['[par Alice], [Bob]', 'Alice...'],
+    ['dirigé par [Clara]; David', 'Clara...'],
+    ['sous la direction de [Élise] | Félix', 'Élise...'],
+    ['éd. par [Gisèle]', 'Gisèle'],
+    ['[Hélène]', 'Hélène'],
+  ];
+  const data = { ...payload, documents: examples.map(([authors], index) => ({ ...documents[index], authors })) };
+  for (const display of ['compact', 'grid']) {
+    const widget = await mount(page, { display }, data);
+    await expect(widget.locator('.authors')).toHaveText(examples.map(([, expected]) => display === 'compact' ? `— ${expected}` : expected));
+  }
+});
+
 test('contenu traité comme texte et couverture résolue depuis le JSON', async ({ page }) => {
   // Les données hostiles sont intentionnelles. Le test vérifie qu'elles restent
   // du texte et que le navigateur n'utilise pas l'URL de couverture du fournisseur.
