@@ -8,7 +8,7 @@ import unittest
 
 from openpyxl import load_workbook
 
-from scripts.csv_to_json import FIELDS, PRIMO_PREFIX, format_holdings, write_excel
+from scripts.prepare_koha_data import FIELDS, PRIMO_PREFIX, format_holdings, write_excel
 
 
 class ExportTests(unittest.TestCase):

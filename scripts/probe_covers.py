@@ -14,16 +14,16 @@ from pathlib import Path
 if __package__:
     # Import lors d'un lancement en module : python -m scripts.probe_covers.
     from .covers import CoverManager, SOURCES
-    from .csv_to_json import ROOT, read_documents
+    from .prepare_koha_data import ROOT, read_documents
 else:
     from covers import CoverManager, SOURCES
-    from csv_to_json import ROOT, read_documents
+    from prepare_koha_data import ROOT, read_documents
 
 
 def main(argv=None):
     # argparse lit les options et contrôle les noms de fournisseurs acceptés.
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--input", type=Path, default=ROOT / "data/data.csv")
+    parser.add_argument("--input", type=Path, default=ROOT / "data/kohadata.csv")
     parser.add_argument("--sample", type=int, default=3)
     parser.add_argument("--output-dir", type=Path, default=ROOT / "cover-probe")
     parser.add_argument("--cover-source", choices=SOURCES, action="append")

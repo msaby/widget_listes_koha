@@ -16,7 +16,7 @@ from scripts.covers import (
     CoverError, CoverManager, MissingCover, ProviderBlocked,
     identifiers, isbn10, isbn13, jpeg_bytes,
 )
-from scripts.csv_to_json import convert, FIELDS
+from scripts.prepare_koha_data import convert, FIELDS
 
 
 def image_bytes(color="blue", size=(100, 160)):
@@ -178,19 +178,19 @@ class CoverTests(unittest.TestCase):
         manager = self.manager(("bnf",))
         manager.provider_image = Mock(return_value=self.jpg)
         copies = [dict(self.document, list_id="11"), dict(self.document, list_id="32")]
-        manager.populate(copies, self.root / "data/data.json")
+        manager.populate(copies, self.root / "data/prepareddata.json")
         manager.provider_image.assert_called_once()
         self.assertEqual([doc["local_cover_url"] for doc in copies], ["../covers/272037.jpg"] * 2)
 
     def test_network_failure_does_not_block_json_or_excel(self):
         import csv
-        source = self.root / "data.csv"
+        source = self.root / "kohadata.csv"
         with source.open("w", newline="", encoding="utf-8") as stream:
             writer = csv.DictWriter(stream, FIELDS, delimiter=";")
             writer.writeheader()
             writer.writerow(dict.fromkeys(FIELDS, "") | self.document | {"list_id": "11"})
         with patch("scripts.covers.CoverManager.fetch", side_effect=CoverError("réseau indisponible")):
-            payload = convert(source, self.root / "data.json", self.root / "exports", covers_dir=self.directory)
+            payload = convert(source, self.root / "prepareddata.json", self.root / "exports", covers_dir=self.directory)
         self.assertEqual(payload["documents"][0]["local_cover_url"], "")
         self.assertIn("export_xlsx", payload["lists"]["11"])
         self.assertTrue((self.root / "exports/liste-11.xlsx").is_file())

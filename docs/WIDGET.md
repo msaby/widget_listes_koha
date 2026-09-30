@@ -202,7 +202,7 @@ sélection est repliée et ne modifie ni la pagination ni la recherche locale.
 Si l'attribut est absent, vide ou invalide, ne pas afficher le lien.
 
 ``` html
-<koha-list-widget src="/selections/data/data.json" list_id="11"
+<koha-list-widget src="/selections/data/prepareddata.json" list_id="11"
   more-results-url="https://exameple.com"></koha-list-widget>
 ```
 

@@ -2,7 +2,7 @@
 
 ## 1. Objectif
 
-Transformer un CSV Koha quotidien en ressources statiques consommables
+Transformer un export CSV ou JSON brut Koha en ressources statiques consommables
 par `<koha-list-widget>` :
 
 ``` text
@@ -20,7 +20,7 @@ CSV → Python
 
 ### Étape 1 --- pipeline de données
 
-Implémenter `scripts/csv_to_json.py` avec :
+Implémenter `scripts/prepare_koha_data.py` avec :
 
 -   lecture robuste du CSV ;
 -   conservation des noms canoniques ;
@@ -131,7 +131,7 @@ internes au Shadow DOM.
 -   export Excel autorisé ou non;
 -   analytics.
 
-Utiliser un jeu de données de démonstration fourni : data/data.csv
+Utiliser un jeu de données de démonstration fourni : data/kohadata.csv
 
 La livraison comprend `demo/index.html` (six exemples et parcours de recette),
 `demo/demo.js` (HTML d'intégration et journal local), ainsi que

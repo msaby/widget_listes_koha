@@ -21,8 +21,8 @@ from urllib.parse import quote
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill
 
-# L'import relatif fonctionne lorsque les tests importent scripts.csv_to_json.
-# L'autre forme permet aussi de lancer directement « python scripts/csv_to_json.py ».
+# L'import relatif fonctionne lorsque les tests importent scripts.prepare_koha_data.
+# L'autre forme permet aussi de lancer directement « python scripts/prepare_koha_data.py ».
 if __package__:
     from .covers import CoverManager, SOURCES
 else:
@@ -96,18 +96,42 @@ def read_documents(path, delimiter=";"):
             context = f"Ligne {reader.line_num}, notice {row.get('biblionumber', '?')}"
             if None in row or any(value is None for value in row.values()):
                 raise ValueError(f"{context} : nombre de cellules incorrect")
-            document = {field: row[field] for field in FIELDS}
-            for field in ("biblionumber", "list_id"):
-                # Seuls les identifiants sont convertis temporairement en nombres.
-                # ISBN/EAN restent du texte : leurs zéros et leur présentation sont conservés.
-                value = document[field].strip()
-                if not re.fullmatch(r"[0-9]+", value) or int(value) <= 0:
-                    raise ValueError(f"{context} : {field} doit être un entier positif")
-                document[field] = str(int(value))
-            document["holdings"] = parse_holdings(document["holdings"], context)
-            document["record_url"] = PRIMO_PREFIX + document["biblionumber"]
-            document["local_cover_url"] = ""
-            documents.append(document)
+            documents.append(normalize_document(row, context))
+    return documents
+
+
+def normalize_document(row, context):
+    """Appliquer le contrat commun aux lignes des exports CSV et JSON Koha."""
+    document = {}
+    for field in FIELDS:
+        value = row[field]
+        if value is None:
+            value = ""
+        if isinstance(value, bool) or not isinstance(value, (str, int)):
+            raise ValueError(f"{context} : {field} doit être du texte, un nombre ou null")
+        document[field] = str(value)
+    for field in ("biblionumber", "list_id"):
+        value = document[field].strip()
+        if not re.fullmatch(r"[0-9]+", value) or int(value) <= 0:
+            raise ValueError(f"{context} : {field} doit être un entier positif")
+        document[field] = str(int(value))
+    document["holdings"] = parse_holdings(document["holdings"], context)
+    document["record_url"] = PRIMO_PREFIX + document["biblionumber"]
+    document["local_cover_url"] = ""
+    return document
+
+
+def read_json_documents(path):
+    """Lire le JSON brut Koha : un tableau de lignes dans l'ordre de FIELDS."""
+    with Path(path).open(encoding="utf-8-sig") as source:
+        rows = json.load(source)
+    if not isinstance(rows, list):
+        raise ValueError("JSON Koha : tableau de lignes attendu")
+    documents = []
+    for index, row in enumerate(rows, start=1):
+        if not isinstance(row, list) or len(row) != len(FIELDS):
+            raise ValueError(f"Ligne JSON {index} : {len(FIELDS)} colonnes attendues")
+        documents.append(normalize_document(dict(zip(FIELDS, row)), f"Ligne JSON {index}, notice {row[0]}"))
     return documents
 
 
@@ -200,7 +224,13 @@ def convert(csv_path, json_path, exports_dir, delimiter=";", *, covers_dir=None,
     # Le * dans la signature impose de nommer les options suivantes lors de l'appel.
     # Cette fonction coordonne les étapes et retourne également le JSON sous forme
     # de dictionnaire Python, ce qui permet aux tests de vérifier son contenu.
-    documents = read_documents(csv_path, delimiter)
+    source_path = Path(csv_path)
+    if source_path.suffix.lower() == ".json":
+        documents = read_json_documents(source_path)
+    elif source_path.suffix.lower() == ".csv":
+        documents = read_documents(source_path, delimiter)
+    else:
+        raise ValueError("--input doit désigner un fichier .csv ou .json")
     lists = {}
     grouped = defaultdict(list)
     # « lists » contient le nom et les réglages de chaque liste ; « grouped »
@@ -254,8 +284,8 @@ def main(argv=None):
     # argparse transforme les options du terminal en attributs de args et fournit
     # automatiquement --help. argv=None lit le terminal ; les tests passent une liste.
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--input", type=Path, default=ROOT / "data/data.csv")
-    parser.add_argument("--output", type=Path, default=ROOT / "data/data.json")
+    parser.add_argument("--input", type=Path, default=ROOT / "data/kohadata.csv")
+    parser.add_argument("--output", type=Path, default=ROOT / "data/prepareddata.json")
     parser.add_argument("--exports-dir", type=Path, default=ROOT / "exports")
     parser.add_argument("--delimiter", default=";")
     parser.add_argument("--covers-dir", type=Path, default=ROOT / "covers")

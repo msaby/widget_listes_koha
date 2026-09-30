@@ -9,7 +9,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from scripts.csv_to_json import FIELDS, PRIMO_PREFIX, convert, main, read_documents
+from scripts.prepare_koha_data import FIELDS, PRIMO_PREFIX, convert, main, read_documents, read_json_documents
 
 
 class PipelineTests(unittest.TestCase):
@@ -20,7 +20,7 @@ class PipelineTests(unittest.TestCase):
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name)
         self.source = self.root / "source.csv"
-        self.output = self.root / "data/data.json"
+        self.output = self.root / "data/prepareddata.json"
         self.exports = self.root / "exports"
 
     def write_csv(self, rows, fields=FIELDS):
@@ -58,13 +58,32 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(result["lists"]["11"]["export_xlsx"], "../exports/liste-11.xlsx")
         self.assertTrue((self.exports / "liste-32.xlsx").exists())
 
+    def test_raw_json_matches_csv_pipeline(self):
+        row = {"biblionumber": "001", "list_id": "11", "title": "Un titre",
+               "isbn": "001234", "holdings": '[{"library":"MEDP"}]'}
+        self.write_csv([row])
+        expected = convert(self.source, self.output, self.exports)
+        raw = self.root / "source.json"
+        raw.write_text(json.dumps([[int(row[field]) if field in ("biblionumber", "list_id")
+                                     else row.get(field) for field in FIELDS]], ensure_ascii=False), encoding="utf-8")
+        actual = convert(raw, self.output, self.exports)
+        self.assertEqual(actual, expected)
+
+    def test_raw_json_rejects_wrong_shape(self):
+        raw = self.root / "source.json"
+        for content in ('{}', '[{"biblionumber": 1}]', '[[1, 2]]'):
+            with self.subTest(content=content):
+                raw.write_text(content, encoding="utf-8")
+                with self.assertRaises(ValueError):
+                    read_json_documents(raw)
+
     def test_invalid_holdings_are_logged_and_replaced(self):
         # subTest nomme chaque variante d'un même scénario. assertLogs intercepte
         # les avertissements et permet de vérifier que la notice fautive est identifiable.
         for holdings in ("broken", "{}", "null", '["item"]', '[{"library":null}]'):
             with self.subTest(holdings=holdings):
                 self.write_csv([{"biblionumber": "1", "list_id": "11", "holdings": holdings}])
-                with self.assertLogs("scripts.csv_to_json", level="WARNING") as logs:
+                with self.assertLogs("scripts.prepare_koha_data", level="WARNING") as logs:
                     documents = read_documents(self.source)
                 self.assertEqual(documents[0]["holdings"], [])
                 self.assertIn("notice 1", logs.output[0])
@@ -103,8 +122,8 @@ class PipelineTests(unittest.TestCase):
         # patch remplace temporairement une fonction, ici par une erreur de disque.
         # On vérifie la tolérance à l'échec, sans devoir réellement verrouiller un fichier.
         self.write_csv([{"biblionumber": "1", "list_id": "11"}])
-        with patch("scripts.csv_to_json.write_excel", side_effect=OSError("verrouillé")):
-            with self.assertLogs("scripts.csv_to_json", level="ERROR"):
+        with patch("scripts.prepare_koha_data.write_excel", side_effect=OSError("verrouillé")):
+            with self.assertLogs("scripts.prepare_koha_data", level="ERROR"):
                 status = main(["--input", str(self.source), "--output", str(self.output),
                                "--exports-dir", str(self.exports), "--skip-covers"])
         self.assertEqual(status, 1)
@@ -122,7 +141,7 @@ class PipelineTests(unittest.TestCase):
         self.write_csv([])
         self.output.parent.mkdir()
         self.output.write_text("previous")
-        with patch("scripts.csv_to_json.os.replace", side_effect=OSError("verrouillé")):
+        with patch("scripts.prepare_koha_data.os.replace", side_effect=OSError("verrouillé")):
             with self.assertRaises(OSError):
                 convert(self.source, self.output, self.exports)
         self.assertEqual(self.output.read_text(), "previous")

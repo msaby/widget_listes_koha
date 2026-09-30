@@ -1,7 +1,7 @@
 # Utiliser Koha List Widget
 
 Ce guide accompagne la démonstration dans `demo/index.html`. Le navigateur
-affiche des fichiers statiques préparés à partir du CSV Koha ; aucun serveur
+affiche des fichiers statiques préparés à partir d'un export CSV ou JSON brut Koha ; aucun serveur
 Python ou Node.js n'est nécessaire sur le site public.
 
 ## 1. Lancer la démonstration
@@ -13,7 +13,7 @@ par les commandes `python` et `node`. Ouvrir un terminal dans le dossier du dép
 python --version
 node --version
 python -m pip install -r requirements.txt
-python scripts/csv_to_json.py --skip-covers
+python scripts/prepare_koha_data.py --skip-covers
 npm start
 ```
 
@@ -23,7 +23,7 @@ Pour lancer cette démo, `npm install` et Playwright ne sont pas nécessaires :
 le serveur utilise uniquement les modules fournis avec Node.js.
 
 Le CSV fourni contient les listes **11** et **32**. La conversion produit
-`data/data.json`, `exports/liste-11.xlsx` et `exports/liste-32.xlsx`.
+`data/prepareddata.json`, `exports/liste-11.xlsx` et `exports/liste-32.xlsx`.
 Ces fichiers générés sont ignorés par Git : il faut les recréer après clonage.
 `--skip-covers` évite les appels aux fournisseurs et laisse `local_cover_url`
 vide, même si des images existent déjà sur disque. Les exemples avec couverture
@@ -48,11 +48,21 @@ attendent le port 4173. Retirer la variable avant les tests avec
 
 ## 2. Préparer les données et les couvertures
 
-Remplacer `data/data.csv` par l'export Koha, en UTF-8, séparé par des
+Remplacer `data/kohadata.csv` par l'export Koha, en UTF-8, séparé par des
 points-virgules, avec les en-têtes décrits dans [DATA_MODEL.md](DATA_MODEL.md).
 `list_id` est le numéro de liste ; `list` son nom lisible. Les cellules
 facultatives peuvent être vides, mais leurs en-têtes restent obligatoires.
 `holdings` contient un tableau JSON sérialisé dans le CSV.
+
+Pour utiliser l'export JSON brut de Koha à la place du CSV :
+
+``` console
+python scripts/prepare_koha_data.py --input data/kohadata.json
+```
+
+Ce JSON est un tableau de lignes sans en-tête ; chaque ligne contient les
+17 champs dans l'ordre de [DATA_MODEL.md](DATA_MODEL.md). Les valeurs `null`
+deviennent des chaînes vides et `holdings` est décodé comme pour le CSV.
 
 La conversion conserve toutes les lignes fournies, sans déduplication ni
 filtrage sur `opac_suppressed`. La sélection des notices destinées à la
@@ -61,7 +71,7 @@ publication se fait donc lors de la préparation de l'export Koha.
 Pour une préparation avec couvertures :
 
 ``` console
-python scripts/csv_to_json.py
+python scripts/prepare_koha_data.py
 ```
 
 Les images sont enregistrées dans `covers/`, avec leur provenance dans
@@ -70,7 +80,7 @@ La priorité est `cover_url`, puis Google Books, BnF et Amazon. Pour choisir
 les fournisseurs et leur ordre :
 
 ``` console
-python scripts/csv_to_json.py --cover-source google --cover-source amazon
+python scripts/prepare_koha_data.py --cover-source google --cover-source amazon
 ```
 
 La recherche de couvertures nettoie les ISBN, valide leur clé et utilise
@@ -81,7 +91,7 @@ restent conservées dans le JSON et l'Excel.
 
 Une clé Google Books peut être fournie dans `GOOGLE_BOOKS_API_KEY` sur la
 machine de traitement. Les options complètes sont disponibles avec
-`python scripts/csv_to_json.py --help` et dans [COVERS.md](COVERS.md).
+`python scripts/prepare_koha_data.py --help` et dans [COVERS.md](COVERS.md).
 
 Les échecs de couvertures sont journalisés et n'empêchent pas le JSON ou
 l'Excel. Le contrôle réel de la BnF reste à reprendre après la panne signalée
@@ -101,7 +111,7 @@ Copier sur votre hébergement HTTP(S), en conservant cette disposition :
   widget/koha-list-widget.js
   widget/koha-list-widget-custom.css    (facultatif)
   widget/koha-list-widget-matomo.js    (facultatif)
-  data/data.json
+  data/prepareddata.json
   covers/*.jpg
   exports/liste-*.xlsx
   demo/index.html                    (si la démo est publiée)
@@ -134,7 +144,7 @@ Exemple pour les ressources publiées sous `/selections/` :
 <link rel="stylesheet" href="/selections/widget/koha-list-widget-custom.css">
 
 <koha-list-widget
-  src="/selections/data/data.json"
+  src="/selections/data/prepareddata.json"
   list_id="11"
   display="compact"
   limit="200"
@@ -220,7 +230,7 @@ réelle n'a pas été testée pendant le développement.
 ## 7. Mettre à jour chaque jour
 
 1. Déposer le nouvel export CSV complet depuis Koha.
-2. Exécuter `python scripts/csv_to_json.py` sur la machine de préparation,
+2. Exécuter `python scripts/prepare_koha_data.py` sur la machine de préparation,
    en conservant le dossier de cache et sans lancer deux conversions simultanées.
 3. Consulter les logs et le code de sortie : 0 pour conversion réussie,
    1 pour erreur de données/écriture ou au moins un Excel non produit.

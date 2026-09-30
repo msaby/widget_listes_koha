@@ -20,7 +20,7 @@ Excel complet, accessibilité, personnalisation CSS et suivi Matomo.
 ## 2. Architecture
 
 ``` text
-Koha → CSV quotidien → csv_to_json.py
+Koha → export CSV ou JSON brut → prepare_koha_data.py
                          ├─ JSON → <koha-list-widget>
                          ├─ couvertures locales
                          └─ XLSX par liste
@@ -37,7 +37,7 @@ Structure cible :
 ``` text
 koha-list-widget/
 ├── data/
-├── scripts/csv_to_json.py
+├── scripts/prepare_koha_data.py
 ├── widget/
 │   ├── koha-list-widget.js
 │   ├── koha-list-widget-custom.css
@@ -211,7 +211,7 @@ désigne l'image locale.
 
 ## 4. Traitement Python
 
-`scripts/csv_to_json.py` prépare quotidiennement le JSON, les
+`scripts/prepare_koha_data.py` prépare quotidiennement le JSON, les
 couvertures et un XLSX par liste. Un échec de couverture ne doit bloquer
 ni le JSON ni l'Excel.
 
@@ -719,7 +719,7 @@ Compact :
 
 ``` html
 <koha-list-widget
-  src="/data/data.json"
+  src="/data/prepareddata.json"
   list_id="11"
   display="compact"
   paginate="40"
@@ -735,7 +735,7 @@ Carrousel complet :
 
 ``` html
 <koha-list-widget
-  src="/data/data.json"
+  src="/data/prepareddata.json"
   list_id="11"
   display="carousel"
   limit="200"

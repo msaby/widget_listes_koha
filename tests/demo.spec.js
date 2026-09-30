@@ -5,7 +5,7 @@ import { test, expect } from '@playwright/test';
 // réellement produits par Python. Il est facultatif sur un dépôt fraîchement cloné.
 
 test('démo avec les données générées, captures des quatre modes', async ({ page }, testInfo) => {
-  test.skip(!existsSync('data/data.json'), 'Générer les données avec csv_to_json.py --skip-covers pour ce test de démonstration.');
+  test.skip(!existsSync('data/prepareddata.json'), 'Générer les données avec prepare_koha_data.py --skip-covers pour ce test de démonstration.');
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -37,7 +37,7 @@ test('démo à la racine : exemples et journal local utilisables', async ({ page
   // Ce petit jeu local garde la recette du guide utilisable sur un clone neuf.
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
-  await page.route('**/data/data.json', route => route.fulfill({ json: {
+  await page.route('**/data/prepareddata.json', route => route.fulfill({ json: {
     lists: { '11': { list: 'Liste test' }, '32': { list: 'Autre test' } },
     documents: [{ list_id: '11', biblionumber: '1', title: 'Exemple' },
       { list_id: '32', biblionumber: '2', title: 'Autre exemple' }],
@@ -45,7 +45,7 @@ test('démo à la racine : exemples et journal local utilisables', async ({ page
   await page.goto('/');
   await expect(page.locator('.integration-example')).toHaveCount(6);
   await page.locator('#compact .integration-example summary').click();
-  await expect(page.locator('#compact .integration-example code')).toContainText('src="/data/data.json"');
+  await expect(page.locator('#compact .integration-example code')).toContainText('src="/data/prepareddata.json"');
   await expect(page.locator('#compact .integration-example code')).toContainText('list_id="32"');
   const widget = page.locator('#compact koha-list-widget');
   // Conserver l'activation clavier, mais éviter toute navigation vers Primo.
@@ -63,10 +63,10 @@ test('démo à la racine : exemples et journal local utilisables', async ({ page
 });
 
 test('démo sans données : instructions de préparation accessibles', async ({ page }) => {
-  await page.route('**/data/data.json', route => route.fulfill({ status: 404 }));
+  await page.route('**/data/prepareddata.json', route => route.fulfill({ status: 404 }));
   await page.goto('/demo/index.html');
   await page.getByText('Démarrer et intégrer la démonstration', { exact: true }).click();
-  await expect(page.getByText('python scripts/csv_to_json.py --skip-covers', { exact: false }).first()).toBeVisible();
+  await expect(page.getByText('python scripts/prepare_koha_data.py --skip-covers', { exact: false }).first()).toBeVisible();
   await expect(page.locator('.integration-example')).toHaveCount(6);
   await expect(page.locator('#grid koha-list-widget .message')).toBeVisible();
 });

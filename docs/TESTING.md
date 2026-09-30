@@ -194,12 +194,12 @@ Ils utilisent des données locales simulées, sans appeler les fournisseurs
 de couvertures. Les contrôles axe complètent les tests clavier et de focus.
 L'horloge simulée permet de vérifier les délais et suspensions de l'autoplay.
 
-Le test de démonstration utilise `data/data.json` lorsqu'il est présent et
+Le test de démonstration utilise `data/prepareddata.json` lorsqu'il est présent et
 enregistre des captures de chaque mode dans `test-results/`. Il est ignoré
 si ce fichier généré est absent. Pour l'inclure sans solliciter les API :
 
 ``` console
-python scripts/csv_to_json.py --skip-covers
+python scripts/prepare_koha_data.py --skip-covers
 npm test
 ```
 

@@ -9,7 +9,7 @@ Avec Python 3.10+ et Node.js 22+, depuis la racine du dépôt :
 
 ``` console
 python -m pip install -r requirements.txt
-python scripts/csv_to_json.py --skip-covers
+python scripts/prepare_koha_data.py --skip-covers
 npm start
 ```
 
@@ -24,16 +24,16 @@ Matomo, la publication et la mise à jour quotidienne.
 
 ## Principe
 
-Le projet transforme un export CSV Koha en ressources statiques prêtes à
+Le projet transforme un export CSV ou JSON brut Koha en ressources statiques prêtes à
 être publiées :
 
 ``` text
 Koha
   │
-  └── export CSV quotidien
+  └── export CSV ou JSON brut
           │
           ▼
-   csv_to_json.py
+   prepare_koha_data.py
       ├── JSON
       ├── couvertures locales
       └── fichiers XLSX par liste
@@ -76,7 +76,7 @@ Le Web Component `<koha-list-widget>` propose :
 <script src="/widget/koha-list-widget-matomo.js" defer></script>
 
 <koha-list-widget
-  src="/data/data.json"
+  src="/data/prepareddata.json"
   list_id="11"
   display="carousel"
   limit="30"
@@ -95,10 +95,11 @@ Le paramètre `list_id` est obligatoire et correspond à un numéro de liste pub
 ``` text
 koha-widget/
 ├── data/
-│   ├── ...
-│   └── *.json
+│   ├── kohadata.csv
+│   ├── kohadata.json
+│   └── prepareddata.json (généré)
 ├── scripts/
-│   └── csv_to_json.py
+│   └── prepare_koha_data.py
 ├── widget/
 │   ├── koha-list-widget.js
 │   ├── koha-list-widget-custom.css
@@ -331,7 +332,7 @@ npm test
 npm start
 ```
 
-Ouvrir ensuite `http://127.0.0.1:4173`. Générer d'abord `data/data.json`
+Ouvrir ensuite `http://127.0.0.1:4173`. Générer d'abord `data/prepareddata.json`
 avec le script Python si nécessaire ; `--skip-covers` évite tout appel aux
 fournisseurs. La démo présente les quatre modes et deux exemples d'autoplay.
 La feuille `widget/koha-list-widget-custom.css` fournit une personnalisation
@@ -343,25 +344,26 @@ la file `_paq`. Le site hôte configure et charge son propre tracker Matomo.
 Sans adaptateur, le widget fonctionne et émet ses événements sans suivi Matomo.
 Voir [le contrat et l'intégration analytics](docs/ANALYTICS.md).
 
-### Conversion CSV → JSON et Excel
+### Conversion CSV ou JSON brut → JSON et Excel
 
 Avec Python 3.10 ou ultérieur, depuis la racine du dépôt :
 
 ``` console
 python -m pip install -r requirements.txt
-python scripts/csv_to_json.py
+python scripts/prepare_koha_data.py
 python -m unittest discover -s tests -v
 ```
 
-La conversion lit `data/data.csv` (UTF-8, BOM facultatif, séparateur `;`)
-et produit `data/data.json` ainsi que `exports/liste-{list_id}.xlsx`.
+La conversion lit `data/kohadata.csv` (UTF-8, BOM facultatif, séparateur `;`)
+et produit `data/prepareddata.json` ainsi que `exports/liste-{list_id}.xlsx`.
 Ces fichiers générés sont ignorés par Git. Les chemins par défaut sont
 relatifs au dépôt, même si la commande est lancée depuis un autre dossier.
 
 Pour choisir les chemins :
 
 ``` console
-python scripts/csv_to_json.py --input data/data.csv --output data/data.json --exports-dir exports --delimiter ";"
+python scripts/prepare_koha_data.py --input data/kohadata.csv --output data/prepareddata.json --exports-dir exports --delimiter ";"
+python scripts/prepare_koha_data.py --input data/kohadata.json --output data/prepareddata.json --exports-dir exports
 ```
 
 Les en-têtes canoniques sont obligatoires ; les cellules bibliographiques
@@ -372,7 +374,7 @@ signalé avec la ligne et la notice, puis remplacé par `[]`. Les propriétés
 des objets `holdings` sont textuelles et peuvent être absentes.
 
 Toutes les lignes sont conservées, sans filtrage sur `opac_suppressed` ni
-déduplication. L'ordre du CSV est conservé dans les exports. Les liens vers
+déduplication. L'ordre du fichier d'entrée est conservé dans les exports. Les liens vers
 les XLSX sont relatifs au dossier du JSON.
 
 Le JSON et chaque XLSX sont remplacés individuellement après une écriture
@@ -391,8 +393,8 @@ l'URL ayant produit l'image. Les notices présentes dans plusieurs listes
 ne sont téléchargées qu'une fois par exécution.
 
 ``` console
-python scripts/csv_to_json.py --cover-source bnf --cover-source google
-python scripts/csv_to_json.py --skip-covers
+python scripts/prepare_koha_data.py --cover-source bnf --cover-source google
+python scripts/prepare_koha_data.py --skip-covers
 python scripts/probe_covers.py --sample 3
 ```
 

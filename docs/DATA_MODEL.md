@@ -2,7 +2,7 @@
 
 ## 1. Champs canoniques
 
-Ordre attendu du CSV :
+Ordre attendu des colonnes CSV et des valeurs de chaque ligne du JSON brut Koha :
 
 ``` text
 biblionumber

@@ -115,7 +115,7 @@ pertinent.
 ## 9. Implémentation Python et fournisseurs
 
 `scripts/covers.py` contient la récupération et le cache ;
-`scripts/csv_to_json.py` l'appelle avant les exports. Pillow valide et
+`scripts/prepare_koha_data.py` l'appelle avant les exports. Pillow valide et
 convertit les images en JPEG (fond blanc pour la transparence). Les réponses
 de plus de 12 Mio, les images illisibles et les images de moins de 32 pixels
 sur un côté sont rejetées. Cette vérification ne détecte pas tous les
