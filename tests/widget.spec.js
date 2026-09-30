@@ -55,6 +55,17 @@ async function mount(page, attributes = {}, data = payload) {
   return widget;
 }
 
+test('ignore l’ancien attribut src et charge le JSON préparé', async ({ page }) => {
+  const requested = [];
+  page.on('request', request => {
+    if (request.url().endsWith('/dist/prepareddata.json')) requested.push(request.url());
+  });
+  const widget = await mount(page, { src: '/bad.json' });
+  await expect(widget.locator('.book')).toHaveCount(12);
+  expect(requested).toHaveLength(1);
+  expect(await widget.getAttribute('src')).toBe('/bad.json');
+});
+
 for (const mode of ['carousel', 'grid', 'list', 'compact']) {
   // Une boucle déclare quatre tests identiques pour le contrat commun à tous les modes.
   test(`affichage ${mode}, limite et liens accessibles`, async ({ page }) => {
