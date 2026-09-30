@@ -40,7 +40,7 @@ Une couverture en erreur ne doit jamais empêcher JSON/XLSX.
 Implémenter :
 
 -   `<koha-list-widget>`;
--   `src` et `list_id` obligatoires ;
+-   `list_id` obligatoire ; le JSON préparé est chargé automatiquement ;
 -   chargement JSON `cache: "no-store"` ;
 -   filtrage par `list_id` ;
 -   états loading/error/empty ;

@@ -13,6 +13,8 @@ const COLLATOR = new Intl.Collator('fr', { sensitivity: 'base', numeric: true })
 // Collator compare les textes selon les règles françaises ; numeric ordonne 2 avant 10.
 // Ces petits helpers sont des fonctions fléchées : « valeur => résultat ».
 const PRIMO = 'https://catalogue.bu.univ-cotedazur.fr/permalink/f/11hf8mm/33UCA_KOHA';
+// Le module et dist/ sont des dossiers voisins, même sous un préfixe de site.
+const DATA_URL = new URL('../dist/prepareddata.json', import.meta.url).href;
 const text = value => typeof value === 'string' || typeof value === 'number' ? String(value) : '';
 const normalized = value => text(value).normalize('NFD').replace(/\p{M}/gu, '').toLocaleLowerCase('fr').trim();
 // NFD sépare les accents de leurs lettres ; \p{M} enlève ensuite ces marques.
@@ -132,7 +134,7 @@ input { width:min(100%,28rem); min-width:0; min-height:44px; border:1px solid va
 export class KohaListWidget extends HTMLElement {
   // Seuls ces attributs déclenchent attributeChangedCallback quand ils sont modifiés.
   // Un attribut booléen comme searchable est activé par sa présence, même sans valeur.
-  static observedAttributes = ['src', 'list_id', 'list', 'display', 'limit', 'paginate', 'sort',
+  static observedAttributes = ['list_id', 'list', 'display', 'limit', 'paginate', 'sort',
     'searchable', 'show-list-name', 'description', 'visibility', 'autoplay', 'autoplay-delay', 'export', 'analytics-id', 'more-results-url'];
 
   constructor() {
@@ -194,13 +196,13 @@ export class KohaListWidget extends HTMLElement {
 
   attributeChangedCallback(name, previous, current) {
     // Adapter un attribut ne nécessite pas toujours de télécharger à nouveau le JSON.
-    // Un tri ou un mode change le rendu ; src ou list_id redémarrent le chargement.
+    // Un tri ou un mode change le rendu ; list_id redémarre le chargement.
     if (previous === current) return;
     if (name === 'visibility') this.collapsed = current === 'collapsed';
-    if (name === 'src' || name === 'list_id') { this.query = ''; this.page = 1; }
+    if (name === 'list_id') { this.query = ''; this.page = 1; }
     if (['sort', 'limit', 'paginate', 'display'].includes(name)) this.page = 1;
     if (name === 'searchable' && current === null) this.query = '';
-    this.queueUpdate(name === 'src' || name === 'list_id');
+    this.queueUpdate(name === 'list_id');
   }
 
   queueUpdate(reload = false) {
@@ -257,10 +259,8 @@ export class KohaListWidget extends HTMLElement {
     this.data = null;
     this.error = '';
     if (!this.listId) { this.render(); return; }
-    this.dataUrl = url(this.getAttribute('src'), document.baseURI);
-    // src est relatif à la page hôte. Une fois le JSON reçu, ses propres liens
-    // (images et exports) seront résolus par rapport à l'URL effective du JSON.
-    if (!this.dataUrl) { this.error = 'La source de cette sélection est absente ou invalide.'; this.render(); return; }
+    this.dataUrl = DATA_URL;
+    // Les liens des images et exports seront résolus depuis l'URL du JSON.
     this.loading = true;
     this.render();
     this.request = new AbortController();

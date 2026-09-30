@@ -45,7 +45,7 @@ test('démo à la racine : exemples et journal local utilisables', async ({ page
   await page.goto('/');
   await expect(page.locator('.integration-example')).toHaveCount(6);
   await page.locator('#compact .integration-example summary').click();
-  await expect(page.locator('#compact .integration-example code')).toContainText('src="/dist/prepareddata.json"');
+  await expect(page.locator('#compact .integration-example code')).not.toContainText('src=');
   await expect(page.locator('#compact .integration-example code')).toContainText('list_id="32"');
   const widget = page.locator('#compact koha-list-widget');
   // Conserver l'activation clavier, mais éviter toute navigation vers Primo.

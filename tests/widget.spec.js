@@ -37,7 +37,7 @@ test.afterEach(async ({}, testInfo) => {
 async function mount(page, attributes = {}, data = payload) {
   // Intercepter la requête JSON pour fournir les données du test. Aucun serveur
   // Koha ni fournisseur d'images n'est requis pour tester les interactions.
-  await page.route('**/data/fixture.json', route => route.fulfill({ json: data }));
+  await page.route('**/dist/prepareddata.json', route => route.fulfill({ json: data }));
   await page.goto('/tests/fixtures/widget.html');
   await page.evaluate(async attributes => {
     // Le code de evaluate s'exécute DANS le navigateur ; le reste du test est dans Node.
@@ -47,7 +47,7 @@ async function mount(page, attributes = {}, data = payload) {
     const widget = document.createElement('koha-list-widget');
     for (const [key, value] of Object.entries(attributes)) if (value !== null) widget.setAttribute(key, value);
     document.querySelector('#mount').append(widget);
-  }, { src: '/data/fixture.json', list_id: '11', ...attributes });
+  }, { list_id: '11', ...attributes });
   const widget = page.locator('koha-list-widget').first();
   if (attributes.list_id !== null && attributes.list_id !== 'bad') {
     await expect(widget.locator('.books')).toBeAttached();
@@ -414,15 +414,18 @@ test('recherche réinitialise scroll et déconnexion nettoie les timers', async 
   await expect(widget.locator('.book')).toHaveCount(1);
 });
 
-test('échec HTTP puis changement de source, format invalide et attributs dynamiques', async ({ page }) => {
+test('échec HTTP, format invalide et attributs dynamiques', async ({ page }) => {
   const widget = await mount(page, { display: 'compact' });
-  await page.route('**/bad.json', route => route.fulfill({ status: 503 }));
-  await widget.evaluate(node => node.setAttribute('src', '/bad.json'));
+  let response = { status: 503 };
+  await page.route('**/dist/prepareddata.json', route => route.fulfill(response));
+  const reload = () => widget.evaluate(node => { node.setAttribute('list_id', '32'); node.setAttribute('list_id', '11'); });
+  await reload();
   await expect(widget).toContainText('Impossible de charger');
-  await page.route('**/invalid.json', route => route.fulfill({ json: { documents: null } }));
-  await widget.evaluate(node => node.setAttribute('src', '/invalid.json'));
+  response = { json: { documents: null } };
+  await reload();
   await expect(widget).toContainText('Impossible de charger');
-  await widget.evaluate(node => { node.setAttribute('src', '/data/fixture.json'); node.setAttribute('limit', 'invalid'); });
+  response = { json: payload };
+  await widget.evaluate(node => { node.setAttribute('list_id', '32'); node.setAttribute('list_id', '11'); node.setAttribute('limit', 'invalid'); });
   await expect(widget.locator('.book')).toHaveCount(12);
   await widget.evaluate(node => node.setAttribute('list_id', '32'));
   await expect(widget.locator('.book')).toHaveCount(0);
@@ -438,18 +441,22 @@ test('500 documents, pagination compacte et contrôle axe avec tous les contrôl
   expect(results.violations).toEqual([]);
 });
 
-test('requête ancienne ignorée après changement de src', async ({ page }) => {
+test('requête ancienne ignorée après changement de liste', async ({ page }) => {
   // Garder une requête en attente puis livrer sa réponse en retard reproduit une
-  // course réseau : une ancienne source ne doit pas écraser la sélection actuelle.
+  // course réseau : une ancienne réponse ne doit pas écraser la sélection actuelle.
   const widget = await mount(page);
   let release;
   const intercepted = new Promise(resolve => { release = resolve; });
   let pending;
-  await page.route('**/slow.json', route => { pending = route; release(); });
-  await widget.evaluate(node => node.setAttribute('src', '/slow.json'));
+  let calls = 0;
+  await page.route('**/dist/prepareddata.json', route => {
+    if (++calls === 1) { pending = route; release(); }
+    else route.fulfill({ json: payload });
+  });
+  await widget.evaluate(node => node.setAttribute('list_id', '32'));
   await intercepted;
   await expect(widget).toContainText('Chargement de la sélection');
-  await widget.evaluate(node => node.setAttribute('src', '/data/fixture.json'));
+  await widget.evaluate(node => node.setAttribute('list_id', '11'));
   await expect(widget.locator('.book')).toHaveCount(12);
   await pending.fulfill({ json: { ...payload, documents: [] } }).catch(() => {});
   await expect(widget.locator('.book')).toHaveCount(12);

@@ -9,7 +9,7 @@ const payload = {
   })),
 };
 async function mount(page, attributes = {}) {
-  await page.route('**/data/analytics.json', route => route.fulfill({ json: payload }));
+  await page.route('**/dist/prepareddata.json', route => route.fulfill({ json: payload }));
   await page.goto('/tests/fixtures/widget.html');
   await page.evaluate(async attributes => {
     await customElements.whenDefined('koha-list-widget');
@@ -23,7 +23,7 @@ async function mount(page, attributes = {}) {
     for (const type of ['click', 'auxclick']) widget.shadowRoot.addEventListener(type, event => {
       if (event.target.closest('a')) event.preventDefault();
     });
-  }, { src: '/data/analytics.json', list_id: '11', 'analytics-id': 'accueil-11', limit: '15', ...attributes });
+  }, { list_id: '11', 'analytics-id': 'accueil-11', limit: '15', ...attributes });
   const widget = page.locator('koha-list-widget');
   await expect(widget.locator('.book')).toHaveCount(attributes.paginate ? Number(attributes.paginate) : 15);
   return widget;

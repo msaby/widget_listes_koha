@@ -460,7 +460,6 @@ Shadow DOM : `open`.
 
  Attribut           Requis   Défaut        Valeurs / rôle
   ------------------ -------- ------------- ---------------------------------------
-  `src`              oui      ---           URL du fichier JSON source
   `list_id`          oui      ---           identifiant de la liste
   `list`             non      ---           nom de la liste
   `display`          non      `carousel`    `carousel`, `grid`, `list`, `compact`
@@ -720,7 +719,7 @@ Compact :
 
 ``` html
 <koha-list-widget
-  src="/dist/prepareddata.json"
+ 
   list_id="11"
   display="compact"
   paginate="40"
@@ -736,7 +735,7 @@ Carrousel complet :
 
 ``` html
 <koha-list-widget
-  src="/dist/prepareddata.json"
+ 
   list_id="11"
   display="carousel"
   limit="200"

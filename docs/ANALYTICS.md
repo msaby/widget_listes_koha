@@ -174,7 +174,7 @@ utilisateur.
 ``` html
 <script type="module" src="/widget/koha-list-widget.js"></script>
 <script src="/widget/koha-list-widget-matomo.js" defer></script>
-<koha-list-widget src="/dist/prepareddata.json" list_id="11"
+<koha-list-widget list_id="11"
   analytics-id="list11-accueil" display="compact" export="xlsx">
 </koha-list-widget>
 ```

@@ -2,10 +2,9 @@
 // de production. Il explique les exemples et affiche un diagnostic local.
 for (const widget of document.querySelectorAll('koha-list-widget')) {
   // Construire l'exemple depuis les vrais attributs évite de documenter une
-  // configuration différente de celle visible. Seul src devient relatif à la
-  // racine du site, comme les scripts du bloc d'intégration en haut de page.
+  // configuration différente de celle visible.
   const attributes = [...widget.attributes].map(attribute => {
-    const value = attribute.name === 'src' ? '/dist/prepareddata.json' : attribute.value;
+    const value = attribute.value;
     // Échapper les caractères réservés pour obtenir du HTML réutilisable.
     const escaped = value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;');
     return `  ${attribute.name}="${escaped}"`;

@@ -76,7 +76,6 @@ Le Web Component `<koha-list-widget>` propose :
 <script src="/widget/koha-list-widget-matomo.js" defer></script>
 
 <koha-list-widget
-  src="/dist/prepareddata.json"
   list_id="11"
   display="carousel"
   limit="30"
@@ -319,8 +318,9 @@ comme des interactions utilisateur.
 
 Les quatre modes, la recherche, le tri, la pagination, le repli, l'export
 et l'autoplay sont disponibles dans `widget/koha-list-widget.js`.
-Charger ce fichier avec `type="module"`, puis utiliser `src` et `list_id`
-comme dans l'exemple ci-dessus. Le navigateur utilise les ressources
+Charger ce fichier avec `type="module"`, puis utiliser `list_id`
+comme dans l'exemple ci-dessus. Le module charge automatiquement
+`../dist/prepareddata.json` depuis son propre emplacement. Le navigateur utilise les ressources
 générées par Python. Il ne requiert aucune dépendance JavaScript.
 
 Pour lancer la démo et les tests (Node.js 22 ou ultérieur) :

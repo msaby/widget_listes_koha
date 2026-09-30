@@ -4,7 +4,6 @@
 
   Attribut           Requis   Défaut        Valeurs / rôle
   ------------------ -------- ------------- ---------------------------------------
-  `src`              oui      ---           URL du fichier JSON source
   `list_id`          oui      ---           identifiant de la liste
   `list`             non      ---           nom de la liste
   `display`          non      `carousel`    `carousel`, `grid`, `list`, `compact`
@@ -29,7 +28,7 @@ afficher**.
 Utiliser :
 
 ``` javascript
-fetch(src, { cache: "no-store" })
+fetch(new URL('../dist/prepareddata.json', import.meta.url), { cache: "no-store" })
 ```
 
 Filtrer les documents par `list_id`.
@@ -202,7 +201,7 @@ sélection est repliée et ne modifie ni la pagination ni la recherche locale.
 Si l'attribut est absent, vide ou invalide, ne pas afficher le lien.
 
 ``` html
-<koha-list-widget src="/selections/dist/prepareddata.json" list_id="11"
+<koha-list-widget list_id="11"
   more-results-url="https://exameple.com"></koha-list-widget>
 ```
 
@@ -229,9 +228,9 @@ results-controls
 
 Charger `widget/koha-list-widget.js` avec `type="module"`. Aucun build ni
 framework n'est nécessaire. Le composant réagit aux changements de ses
-attributs ; un changement de source annule le chargement précédent. Les
-chemins `local_cover_url` et `export_xlsx` sont relatifs au JSON, et `src`
-est relatif à la page hôte. Servir les fichiers en HTTP(S), avec CORS
+attributs ; un changement de `list_id` relance le chargement. Les
+chemins `local_cover_url` et `export_xlsx` sont relatifs au JSON, qui se
+trouve dans `../dist/` par rapport au module. Servir les fichiers en HTTP(S), avec CORS
 autorisé par le serveur de données si les origines diffèrent.
 
 La navigation clavier du carrousel utilise Gauche/Droite et Début/Fin.

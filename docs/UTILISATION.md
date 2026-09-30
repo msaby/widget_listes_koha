@@ -140,8 +140,9 @@ Le module doit être servi avec un type MIME JavaScript, le JSON avec
 `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`.
 Ouvrir les pages par HTTP(S), pas par double-clic en `file://`.
 
-`src` est résolu depuis la page hôte. En revanche, les chemins de couvertures
-et d'Excel sont résolus depuis le JSON : garder les dossiers voisins évite
+Le widget charge automatiquement `../dist/prepareddata.json` par rapport au
+module `widget/koha-list-widget.js`. Les chemins de couvertures et d'Excel
+sont résolus depuis le JSON : garder les dossiers voisins évite
 de devoir réécrire ces liens. Si le module ou le JSON se trouvent sur une
 autre origine, leur serveur doit autoriser le chargement CORS depuis le site
 hôte. Pour un téléchargement XLSX hébergé sur une autre origine, configurer
@@ -157,7 +158,6 @@ Exemple pour les ressources publiées sous `/selections/` :
 <link rel="stylesheet" href="/selections/widget/koha-list-widget-custom.css">
 
 <koha-list-widget
-  src="/selections/dist/prepareddata.json"
   list_id="11"
   display="compact"
   limit="200"
@@ -178,7 +178,7 @@ module dans le modèle de page si les scripts des blocs sont supprimés.
 
 | Réglage | Effet |
 | --- | --- |
-| `src`, `list_id` | Source JSON et entier positif identifiant la liste, obligatoires. |
+| `list_id` | Entier positif identifiant la liste, obligatoire. |
 | `display` | `carousel` par défaut, ou `grid`, `list`, `compact`. |
 | `limit` | Maximum après recherche, 12 par défaut. Ce n'est pas une taille de page. |
 | `paginate` | Taille de page pour grille, liste et compact ; ignorée en carrousel. |
@@ -257,7 +257,7 @@ commande avec les chemins absolus de Python et du script. L'automatisation de
 l'export Koha et du transfert vers votre hébergement dépend de votre installation
 et n'est pas incluse dans ce dépôt.
 
-Le widget recharge les données à son insertion ou au changement de `src` ou
+Le widget recharge les données à son insertion ou au changement de
 `list_id`, pas périodiquement dans une page déjà ouverte. Le JSON est demandé
 avec `cache: no-store`. Si votre hébergement utilise un cache intermédiaire,
 adapter sa politique au rythme quotidien ; rafraîchir aussi les JPEG remplacés.
@@ -268,7 +268,7 @@ Les anciens fichiers d'export et de couverture ne sont pas supprimés automatiqu
 | Symptôme | Vérification |
 | --- | --- |
 | Widget totalement absent | Module chargé, balise autorisée par le CMS, `list_id` entier positif. |
-| Message de chargement impossible | Générer le JSON, vérifier `src`, HTTP(S), statut réseau et CORS. |
+| Message de chargement impossible | Générer `dist/prepareddata.json`, vérifier HTTP(S), statut réseau et CORS. |
 | Liste introuvable ou vide | Vérifier la clé dans `lists`, les `list_id` des documents et la recherche. |
 | Seulement 12 documents | Augmenter `limit`, indépendamment de `paginate`. |
 | Pas de couverture | Vérifier `--skip-covers`, `local_cover_url`, les fichiers et les logs fournisseurs. |
