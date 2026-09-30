@@ -24,12 +24,13 @@ const titleKey = value => normalized(value).replace(/^(?:(?:le|la|les|un|une|des
 const publicationYear = value => Number(text(value).match(/(?:^|\D)(\d{4})(?:\D|$)/)?.[1]) || null;
 const PUBLISHER_WORDS = new Set(['edition', 'editions', 'editeur', 'editeurs', 'librairie', 'libr', 'publisher', 'publishers', 'publishing']);
 const displayPublisher = value => text(value).split('|', 1)[0]
-  .replace(/[\p{L}\p{M}]+\.?/gu, word => PUBLISHER_WORDS.has(normalized(word.replace(/\.$/, ''))) ? '' : word)
+  .replace(/[\p{L}\p{M}]+\.?/gu, word => PUBLISHER_WORDS.has(normalized(word.replace(/\.$/, '')))
+    || (word.endsWith('.') && normalized(word.slice(0, -1)) === 'ed') ? '' : word)
   .replace(/\s+/g, ' ').replace(/^[\s,;:–—-]+|[\s,;:–—-]+$/g, '').trim();
 function displayAuthors(value) {
   const authors = text(value).replace(/[\[\]]/g, '').split(/[,;|]|\s+(?:et|and|avec)\s+/iu).map(part => part.trim()).filter(Boolean);
   if (!authors.length) return '';
-  const first = authors[0].replace(/^(?:(?:sous\s+la\s+dir\S*\s+(?:de\s+|d['’]\s*)|dir\S*\s+par\s+|éd\S*\s+par\s+|par\s+))+/iu, '').trim();
+  const first = authors[0].replace(/^(?:(?:sous\s+la\s+dir\S*\s+(?:d[eéèêë]\p{M}*\s+|d['’]\s*)|dir\S*\s+par\s+|[eéèêë]\p{M}*d\S*\s+par\s+|par\s+|textes?\s+d[eéèêë]\p{M}*\s+|d[eéèêë]\p{M}*\s+))+/iu, '').trim();
   return first + (authors.length > 1 ? '...' : '');
 }
 function url(value, base) {

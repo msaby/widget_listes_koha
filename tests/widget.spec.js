@@ -193,11 +193,14 @@ test('affichage de l’éditeur réduit au premier et sans termes génériques',
     ['PUBLISHER ÉDITEUR Éditions Atlas | Autre', 'Atlas, 2004'],
     ['publishing editeur editions ÉdItIon Éditions Boréal | Autre', 'Boréal, 2005'],
     ['Morgan Kaufmann Publishers | Autre', 'Morgan Kaufmann, 2006'],
+    ['Ed. Noires Terres', 'Noires Terres, 2007'],
+    ['ÉD. des Montagnes', 'des Montagnes, 2008'],
+    ['ED Noires Terres', 'ED Noires Terres, 2009'],
   ];
   const data = { ...payload, documents: publishers.map(([publisher], index) => ({ ...documents[index], publisher })) };
   for (const display of ['compact', 'grid']) {
-    const widget = await mount(page, { display }, data);
-    await expect(widget.locator('.meta')).toHaveText(publishers.map(([, expected]) => display === 'compact' ? `— ${expected}` : expected));
+    const widget = await mount(page, { display, limit: '20' }, data);
+    await expect(widget.locator('.meta')).toHaveText(publishers.map(([, expected]) => display === 'compact' ? expected.replace(', ', ' · ') : expected));
   }
 });
 
@@ -214,11 +217,14 @@ test('affichage des auteurs sans crochets ni préfixes, limité au premier', asy
     ['[Kate] AND [Liam]', 'Kate...'],
     ['[Marie] avec [Nadia]', 'Marie...'],
     ['Sandrine', 'Sandrine'],
+    ['[texte de] Henri Hudrisier', 'Henri Hudrisier'],
+    ['TEXTES DE [Zoé]', 'Zoé'],
+    ['Dé [Émile]', 'Émile'],
   ];
   const data = { ...payload, documents: examples.map(([authors], index) => ({ ...documents[index], authors })) };
   for (const display of ['compact', 'grid']) {
-    const widget = await mount(page, { display }, data);
-    await expect(widget.locator('.authors')).toHaveText(examples.map(([, expected]) => display === 'compact' ? `— ${expected}` : expected));
+    const widget = await mount(page, { display, limit: '20' }, data);
+    await expect(widget.locator('.authors')).toHaveText(examples.map(([, expected]) => expected));
   }
 });
 
