@@ -3,6 +3,7 @@ __pycache__/
 .vscode/
 .venv/
 /dist/prepareddata.json
+/logs/
 /exports/*.xlsx
 /covers/
 /cover-probe/

@@ -23,6 +23,7 @@ class PipelineTests(unittest.TestCase):
         self.source = self.root / "source.csv"
         self.output = self.root / "dist/prepareddata.json"
         self.exports = self.root / "exports"
+        self.log_file = self.root / "logs/prepare_koha_data.log"
 
     def write_csv(self, rows, fields=FIELDS):
         # Construire un vrai CSV teste aussi les guillemets et les retours à la ligne.
@@ -133,13 +134,35 @@ class PipelineTests(unittest.TestCase):
         # On vérifie la tolérance à l'échec, sans devoir réellement verrouiller un fichier.
         self.write_csv([{"biblionumber": "1", "list_id": "11"}])
         with patch("scripts.prepare_koha_data.write_excel", side_effect=OSError("verrouillé")):
-            with self.assertLogs("scripts.prepare_koha_data", level="ERROR"):
-                status = main(["--input", str(self.source), "--output", str(self.output),
-                               "--exports-dir", str(self.exports), "--skip-covers"])
+            status = main(["--input", str(self.source), "--output", str(self.output),
+                           "--exports-dir", str(self.exports), "--skip-covers",
+                           "--log-file", str(self.log_file)])
         self.assertEqual(status, 1)
+        self.assertIn("ERROR", self.log_file.read_text(encoding="utf-8"))
         result = json.loads(self.output.read_text())
         self.assertNotIn("export_xlsx", result["lists"]["11"])
         self.assertEqual(len(result["documents"]), 1)
+
+    def test_log_levels_and_unexpected_error(self):
+        self.write_csv([{"biblionumber": "1", "list_id": "11", "holdings": "invalid"}])
+        options = ["--input", str(self.source), "--output", str(self.output),
+                   "--exports-dir", str(self.exports), "--skip-covers",
+                   "--log-file", str(self.log_file)]
+        self.assertEqual(main(options), 0)
+        log = self.log_file.read_text(encoding="utf-8")
+        self.assertIn("WARNING", log)
+        self.assertIn("holdings invalide", log)
+        self.assertNotIn("INFO", log)
+
+        self.assertEqual(main(options + ["--verbose"]), 0)
+        self.assertIn("INFO", self.log_file.read_text(encoding="utf-8"))
+
+        with patch("scripts.prepare_koha_data.convert", side_effect=RuntimeError("panne inattendue")):
+            self.assertEqual(main(options), 1)
+        log = self.log_file.read_text(encoding="utf-8")
+        self.assertIn("ERROR", log)
+        self.assertIn("Traceback", log)
+        self.assertIn("panne inattendue", log)
 
     def test_header_only_csv(self):
         self.write_csv([])

@@ -359,6 +359,9 @@ La conversion lit `data/kohadata.csv` (UTF-8, BOM facultatif, séparateur `;`)
 et produit `dist/prepareddata.json` ainsi que `exports/liste-{list_id}.xlsx`.
 Le JSON préparé indique la date d'exécution, le format source et les nombres
 de documents et de listes dans `metadata`.
+Le journal local `logs/prepare_koha_data.log` enregistre toujours les
+avertissements et erreurs. Ajouter `--verbose` pour enregistrer aussi les
+messages `INFO` ; `--log-file` permet de choisir son emplacement.
 Ces fichiers générés sont ignorés par Git. Les chemins par défaut sont
 relatifs au dépôt, même si la commande est lancée depuis un autre dossier.
 

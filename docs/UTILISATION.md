@@ -74,6 +74,19 @@ Pour une préparation avec couvertures :
 python scripts/prepare_koha_data.py
 ```
 
+Le script écrit son journal dans `logs/prepare_koha_data.log` (jusqu'à 5 Mo,
+avec trois archives de rotation). Les messages `WARNING` et `ERROR` sont
+toujours enregistrés ; les messages `INFO`, notamment le bilan de conversion,
+le sont seulement avec `--verbose`. Les mêmes niveaux sont affichés dans le
+terminal. Une erreur imprévue est enregistrée au niveau `ERROR` avec sa trace.
+Pour choisir un autre fichier de journal :
+
+``` console
+python scripts/prepare_koha_data.py --input data/kohadata.json --verbose --log-file logs/koha-manuel.log
+```
+
+Le dossier `logs/` est local et ignoré par Git.
+
 Les images sont enregistrées dans `covers/`, avec leur provenance dans
 `covers/.cover-cache.json`. Garder ce cache d'un traitement à l'autre.
 La priorité est `cover_url`, puis Google Books, BnF et Amazon. Pour choisir

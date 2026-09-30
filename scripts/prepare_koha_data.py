@@ -13,6 +13,7 @@ import csv
 from datetime import datetime, timezone
 import json
 import logging
+from logging.handlers import RotatingFileHandler
 import os
 from pathlib import Path
 import re
@@ -34,6 +35,7 @@ LOGGER = logging.getLogger(__name__)
 # __file__ désigne ce script ; parents[1] remonte à la racine du dépôt.
 # Les chemins par défaut ne dépendent donc pas du dossier depuis lequel on lance Python.
 ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_LOG_FILE = ROOT / "logs/prepare_koha_data.log"
 # FIELDS décrit le contrat de données, HEADERS les libellés publics de l'Excel.
 # L'ordre des valeurs écrites par write_excel() doit correspondre à HEADERS.
 FIELDS = (
@@ -292,6 +294,21 @@ def convert(csv_path, json_path, exports_dir, delimiter=";", *, covers_dir=None,
     return payload
 
 
+def configure_logging(path, verbose=False):
+    """Conserver les avertissements et erreurs, et les infos sur demande."""
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    level = logging.INFO if verbose else logging.WARNING
+    formatter = logging.Formatter("%(asctime)s %(levelname)s [%(name)s] %(message)s")
+    file_handler = RotatingFileHandler(path, maxBytes=5 * 1024 * 1024,
+                                       backupCount=3, encoding="utf-8")
+    file_handler.setFormatter(formatter)
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(formatter)
+    logging.basicConfig(level=level, handlers=[file_handler, console_handler], force=True)
+    return file_handler, console_handler
+
+
 def main(argv=None):
     # argparse transforme les options du terminal en attributs de args et fournit
     # automatiquement --help. argv=None lit le terminal ; les tests passent une liste.
@@ -307,24 +324,38 @@ def main(argv=None):
     parser.add_argument("--cover-delay", type=float, default=0.3)
     parser.add_argument("--skip-covers", action="store_true", help="Conversion sans traitement des couvertures")
     parser.add_argument("--retry-missing-covers", action="store_true", help="Réinitialiser le cache négatif des fournisseurs")
+    parser.add_argument("--verbose", action="store_true", help="Inclure les messages INFO dans le journal et le terminal")
+    parser.add_argument("--log-file", type=Path, default=DEFAULT_LOG_FILE,
+                        help="Journal de préparation (défaut : logs/prepare_koha_data.log)")
     args = parser.parse_args(argv)
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s : %(message)s")
-    if len(args.delimiter) != 1:
-        parser.error("--delimiter doit contenir un seul caractère")
     try:
+        handlers = configure_logging(args.log_file, args.verbose)
+    except OSError as exc:
+        parser.exit(1, f"Impossible d'ouvrir le journal {args.log_file} : {exc}\n")
+    try:
+        if len(args.delimiter) != 1:
+            raise ValueError("--delimiter doit contenir un seul caractère")
         payload = convert(args.input, args.output, args.exports_dir, args.delimiter,
                           covers_dir=None if args.skip_covers else args.covers_dir,
                           cover_sources=args.cover_source if args.cover_source is not None else SOURCES,
                           cover_timeout=args.cover_timeout, cover_delay=args.cover_delay,
                           google_api_key=os.environ.get("GOOGLE_BOOKS_API_KEY"),
                           retry_missing_covers=args.retry_missing_covers)
+        # Le code de sortie est lu par le terminal ou le planificateur quotidien :
+        # 0 = succès ; 1 = erreur de conversion ou au moins un Excel non produit.
+        # Les échecs de couvertures sont journalisés, mais ne rendent pas ce code négatif.
+        return 0 if all("export_xlsx" in item for item in payload["lists"].values()) else 1
     except (OSError, ValueError, csv.Error) as exc:
         LOGGER.error("Conversion interrompue : %s", exc)
         return 1
-    # Le code de sortie est lu par le terminal ou le planificateur quotidien :
-    # 0 = succès ; 1 = erreur de conversion ou au moins un Excel non produit.
-    # Les échecs de couvertures sont journalisés, mais ne rendent pas ce code négatif.
-    return 0 if all("export_xlsx" in item for item in payload["lists"].values()) else 1
+    except Exception:
+        LOGGER.exception("Erreur imprévue pendant la préparation")
+        return 1
+    finally:
+        # main() est aussi appelé depuis les tests ; libérer le journal sous Windows.
+        for handler in handlers:
+            logging.getLogger().removeHandler(handler)
+            handler.close()
 
 
 if __name__ == "__main__":
