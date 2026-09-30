@@ -133,7 +133,7 @@ internes au Shadow DOM.
 
 Utiliser un jeu de données de démonstration fourni : data/kohadata.csv
 
-La livraison comprend `demo/index.html` (six exemples et parcours de recette),
+La livraison comprend `demo/index.html` (sept exemples et parcours de recette),
 `demo/demo.js` (HTML d'intégration et journal local), ainsi que
 [UTILISATION.md](UTILISATION.md) pour le démarrage, la publication et l'exploitation.
 Le script de démonstration est indépendant des deux scripts distribués du widget.

@@ -232,7 +232,7 @@ sur le site hôte, avec sa configuration et sa politique de consentement.
 ## 15. Livraison et démonstration
 
 Suivre le démarrage de [UTILISATION.md](UTILISATION.md), puis parcourir les
-six exemples de la démo et leur code HTML. `tests/demo.spec.js` vérifie aussi
+sept exemples de la démo et leur code HTML. `tests/demo.spec.js` vérifie aussi
 l'ouverture depuis la racine du serveur, le journal local et son effacement,
 le cas où le JSON manque, et les téléchargements XLSX générés. Le scénario
 avec données réelles nécessite la conversion préalable ; les scénarios de

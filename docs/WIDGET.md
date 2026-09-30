@@ -5,6 +5,7 @@
   Attribut           Requis   Défaut        Valeurs / rôle
   ------------------ -------- ------------- ---------------------------------------
   `list_id`          oui      ---           identifiant de la liste
+  `library-filter`   non      ---           codes de bibliothèque séparés par des virgules
   `list`             non      ---           nom de la liste
   `display`          non      `carousel`    `carousel`, `grid`, `list`, `compact`
   `limit`            non      `12`          maximum présenté
@@ -22,6 +23,12 @@
 
 Si `list_id` manque ou n'est pas un entier positif valide, **ne rien
 afficher**.
+
+`library-filter="SCIEN,LASH"` garde les documents ayant au moins un exemplaire
+dans l'une de ces bibliothèques (`holdings[].library`). Les espaces autour des
+codes sont ignorés. Une valeur vide ou composée seulement de codes absents
+du JSON ne filtre rien. Si un code existe et un autre non, le code existant
+est appliqué. Modifier l'attribut met à jour l'affichage sans recharger le JSON.
 
 ## 2. Chargement
 

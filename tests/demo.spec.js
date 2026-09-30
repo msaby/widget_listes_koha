@@ -39,11 +39,14 @@ test('démo à la racine : exemples et journal local utilisables', async ({ page
   page.on('pageerror', error => errors.push(error.message));
   await page.route('**/dist/prepareddata.json', route => route.fulfill({ json: {
     lists: { '11': { list: 'Liste test' }, '32': { list: 'Autre test' } },
-    documents: [{ list_id: '11', biblionumber: '1', title: 'Exemple' },
-      { list_id: '32', biblionumber: '2', title: 'Autre exemple' }],
+    documents: [{ list_id: '11', biblionumber: '1', title: 'Exemple', holdings: [{ library: 'SCIEN' }] },
+      { list_id: '32', biblionumber: '2', title: 'Autre exemple', holdings: [{ library: 'LASH' }] }],
   } }));
   await page.goto('/');
-  await expect(page.locator('.integration-example')).toHaveCount(6);
+  await expect(page.locator('.integration-example')).toHaveCount(7);
+  await expect(page.locator('#scien koha-list-widget .book')).toHaveCount(1);
+  await page.locator('#scien .integration-example summary').click();
+  await expect(page.locator('#scien .integration-example code')).toContainText('library-filter="SCIEN"');
   await page.locator('#compact .integration-example summary').click();
   await expect(page.locator('#compact .integration-example code')).not.toContainText('src=');
   await expect(page.locator('#compact .integration-example code')).toContainText('list_id="32"');
@@ -67,6 +70,6 @@ test('démo sans données : instructions de préparation accessibles', async ({ 
   await page.goto('/demo/index.html');
   await page.getByText('Démarrer et intégrer la démonstration', { exact: true }).click();
   await expect(page.getByText('python scripts/prepare_koha_data.py --skip-covers', { exact: false }).first()).toBeVisible();
-  await expect(page.locator('.integration-example')).toHaveCount(6);
+  await expect(page.locator('.integration-example')).toHaveCount(7);
   await expect(page.locator('#grid koha-list-widget .message')).toBeVisible();
 });

@@ -461,6 +461,7 @@ Shadow DOM : `open`.
  Attribut           Requis   Défaut        Valeurs / rôle
   ------------------ -------- ------------- ---------------------------------------
   `list_id`          oui      ---           identifiant de la liste
+  `library-filter`   non      ---           codes de bibliothèque séparés par des virgules
   `list`             non      ---           nom de la liste
   `display`          non      `carousel`    `carousel`, `grid`, `list`, `compact`
   `limit`            non      `12`          maximum présenté

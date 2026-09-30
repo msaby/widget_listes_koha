@@ -14,7 +14,7 @@ npm start
 ```
 
 Ouvrir **http://127.0.0.1:4173/demo/index.html**. La démonstration propose
-six exemples, leur code HTML et un journal local des événements. `Ctrl+C`
+sept exemples, leur code HTML et un journal local des événements. `Ctrl+C`
 arrête le serveur. Aucun appel aux fournisseurs de couvertures n'est effectué
 avec `--skip-covers` ; les images sont alors remplacées par des placeholders.
 
@@ -63,6 +63,7 @@ Le Web Component `<koha-list-widget>` propose :
 -   téléchargement de la liste complète au format Excel ;
 -   récupération et cache local des couvertures ;
 -   prise en compte des exemplaires via `holdings` ;
+-   filtre facultatif par bibliothèque avec `library-filter="SCIEN,LASH"` ;
 -   accessibilité clavier et technologies d'assistance ;
 -   respect de `prefers-reduced-motion` ;
 -   personnalisation graphique via les Shadow Parts ;

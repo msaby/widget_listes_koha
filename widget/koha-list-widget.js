@@ -134,7 +134,7 @@ input { width:min(100%,28rem); min-width:0; min-height:44px; border:1px solid va
 export class KohaListWidget extends HTMLElement {
   // Seuls ces attributs déclenchent attributeChangedCallback quand ils sont modifiés.
   // Un attribut booléen comme searchable est activé par sa présence, même sans valeur.
-  static observedAttributes = ['list_id', 'list', 'display', 'limit', 'paginate', 'sort',
+  static observedAttributes = ['list_id', 'library-filter', 'list', 'display', 'limit', 'paginate', 'sort',
     'searchable', 'show-list-name', 'description', 'visibility', 'autoplay', 'autoplay-delay', 'export', 'analytics-id', 'more-results-url'];
 
   constructor() {
@@ -200,6 +200,7 @@ export class KohaListWidget extends HTMLElement {
     if (previous === current) return;
     if (name === 'visibility') this.collapsed = current === 'collapsed';
     if (name === 'list_id') { this.query = ''; this.page = 1; }
+    if (name === 'library-filter') this.page = 1;
     if (['sort', 'limit', 'paginate', 'display'].includes(name)) this.page = 1;
     if (name === 'searchable' && current === null) this.query = '';
     this.queueUpdate(name === 'list_id');
@@ -311,7 +312,14 @@ export class KohaListWidget extends HTMLElement {
     this.metadata = this.data?.lists[String(this.listId)] || {};
     // list_id choisit la liste Koha ; list est son nom lisible ; display choisit
     // le mode graphique. Ces trois usages ne sont pas interchangeables.
-    this.selection = (this.data?.documents || []).filter(doc => doc && integer(text(doc.list_id)) === this.listId);
+    const documents = this.data?.documents || [];
+    this.selection = documents.filter(doc => doc && integer(text(doc.list_id)) === this.listId);
+    const libraries = new Set((this.getAttribute('library-filter') || '').split(',')
+      .map(value => value.trim().toUpperCase()).filter(Boolean));
+    const inLibrary = doc => Array.isArray(doc?.holdings) && doc.holdings.some(item =>
+      item && libraries.has(text(item.library).trim().toUpperCase()));
+    // Un code absent de tout le JSON laisse la sélection entière visible.
+    if (libraries.size && documents.some(inLibrary)) this.selection = this.selection.filter(inLibrary);
     const name = this.getAttribute('list') || text(this.metadata.list) || text(this.selection[0]?.list) || 'Sélection de documents';
     const sheet = element('style', {}, styles);
     this.region = element('section', { class: `widget ${this.mode}`, part: `widget ${this.mode}`, role: 'region', 'aria-label': name });

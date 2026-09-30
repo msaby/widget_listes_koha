@@ -66,6 +66,30 @@ test('ignore l’ancien attribut src et charge le JSON préparé', async ({ page
   expect(await widget.getAttribute('src')).toBe('/bad.json');
 });
 
+test('filtre les documents par bibliothèque sans recharger le JSON', async ({ page }) => {
+  const data = { ...payload, documents: [
+    { ...documents[0], title: 'Sciences', holdings: [{ library: 'SCIEN' }] },
+    { ...documents[1], title: 'Lettres', holdings: [{ library: 'LASH' }] },
+    { ...documents[2], title: 'Deux bibliothèques', holdings: [{ library: 'SCIEN' }, { library: 'LASH' }] },
+    { ...documents[3], title: 'Sans exemplaire', holdings: [] },
+  ] };
+  let requests = 0;
+  page.on('request', request => { if (request.url().endsWith('/dist/prepareddata.json')) requests++; });
+  const widget = await mount(page, { display: 'list', limit: '20', 'library-filter': 'SCIEN' }, data);
+  await expect(widget.locator('.book')).toHaveCount(2);
+  await expect(widget.locator('.title')).toContainText(['Deux bibliothèques', 'Sciences']);
+
+  await widget.evaluate(node => node.setAttribute('library-filter', ' SCIEN , LASH '));
+  await expect(widget.locator('.book')).toHaveCount(3);
+  await widget.evaluate(node => node.setAttribute('library-filter', 'INCONNUE'));
+  await expect(widget.locator('.book')).toHaveCount(4);
+  await widget.evaluate(node => node.setAttribute('library-filter', 'SCIEN,INCONNUE'));
+  await expect(widget.locator('.book')).toHaveCount(2);
+  await widget.evaluate(node => node.setAttribute('library-filter', ''));
+  await expect(widget.locator('.book')).toHaveCount(4);
+  expect(requests).toBe(1);
+});
+
 for (const mode of ['carousel', 'grid', 'list', 'compact']) {
   // Une boucle déclare quatre tests identiques pour le contrat commun à tous les modes.
   test(`affichage ${mode}, limite et liens accessibles`, async ({ page }) => {

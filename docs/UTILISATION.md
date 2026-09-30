@@ -30,8 +30,8 @@ vide, même si des images existent déjà sur disque. Les exemples avec couvertu
 affichent alors « Couverture indisponible » ; le mode compact n'affiche rien
 à cet emplacement.
 
-La page propose six exemples avec leur HTML réutilisable : carrousel manuel,
-grille, liste, compact, autoplay à cinq secondes, autoplay à une seconde
+La page propose sept exemples avec leur HTML réutilisable : carrousel manuel,
+grille, liste, compact, filtre SCIEN, autoplay à cinq secondes, autoplay à une seconde
 initialement replié. Le journal local en bas de page montre les dix dernières
 interactions. La démo ne configure aucun serveur Matomo.
 
@@ -179,6 +179,7 @@ module dans le modèle de page si les scripts des blocs sont supprimés.
 | Réglage | Effet |
 | --- | --- |
 | `list_id` | Entier positif identifiant la liste, obligatoire. |
+| `library-filter` | Bibliothèques à conserver, par exemple `SCIEN` ou `SCIEN,LASH`. Vide ou entièrement inconnu : aucun filtre. |
 | `display` | `carousel` par défaut, ou `grid`, `list`, `compact`. |
 | `limit` | Maximum après recherche, 12 par défaut. Ce n'est pas une taille de page. |
 | `paginate` | Taille de page pour grille, liste et compact ; ignorée en carrousel. |
@@ -196,7 +197,7 @@ La réduction des mouvements désactive toujours l'autoplay.
 
 Pour paginer plus de douze documents, fixer aussi `limit` à une valeur
 suffisante. Le téléchargement Excel contient toute la liste, même après une
-recherche ou avec une limite d'affichage. Il inclut les résumés et les
+recherche, un filtre de bibliothèque ou une limite d'affichage. Il inclut les résumés et les
 exemplaires, avec un exemplaire par ligne dans une cellule. Le widget
 n'affiche ni ne recherche ces deux champs.
 
