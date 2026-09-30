@@ -76,7 +76,7 @@ Le Web Component `<koha-list-widget>` propose :
 <script src="/widget/koha-list-widget-matomo.js" defer></script>
 
 <koha-list-widget
-  src="/data/prepareddata.json"
+  src="/dist/prepareddata.json"
   list_id="11"
   display="carousel"
   limit="30"
@@ -96,7 +96,8 @@ Le paramètre `list_id` est obligatoire et correspond à un numéro de liste pub
 koha-widget/
 ├── data/
 │   ├── kohadata.csv
-│   ├── kohadata.json
+│   └── kohadata.json
+├── dist/
 │   └── prepareddata.json (généré)
 ├── scripts/
 │   └── prepare_koha_data.py
@@ -332,7 +333,7 @@ npm test
 npm start
 ```
 
-Ouvrir ensuite `http://127.0.0.1:4173`. Générer d'abord `data/prepareddata.json`
+Ouvrir ensuite `http://127.0.0.1:4173`. Générer d'abord `dist/prepareddata.json`
 avec le script Python si nécessaire ; `--skip-covers` évite tout appel aux
 fournisseurs. La démo présente les quatre modes et deux exemples d'autoplay.
 La feuille `widget/koha-list-widget-custom.css` fournit une personnalisation
@@ -355,15 +356,17 @@ python -m unittest discover -s tests -v
 ```
 
 La conversion lit `data/kohadata.csv` (UTF-8, BOM facultatif, séparateur `;`)
-et produit `data/prepareddata.json` ainsi que `exports/liste-{list_id}.xlsx`.
+et produit `dist/prepareddata.json` ainsi que `exports/liste-{list_id}.xlsx`.
+Le JSON préparé indique la date d'exécution, le format source et les nombres
+de documents et de listes dans `metadata`.
 Ces fichiers générés sont ignorés par Git. Les chemins par défaut sont
 relatifs au dépôt, même si la commande est lancée depuis un autre dossier.
 
 Pour choisir les chemins :
 
 ``` console
-python scripts/prepare_koha_data.py --input data/kohadata.csv --output data/prepareddata.json --exports-dir exports --delimiter ";"
-python scripts/prepare_koha_data.py --input data/kohadata.json --output data/prepareddata.json --exports-dir exports
+python scripts/prepare_koha_data.py --input data/kohadata.csv --output dist/prepareddata.json --exports-dir exports --delimiter ";"
+python scripts/prepare_koha_data.py --input data/kohadata.json --output dist/prepareddata.json --exports-dir exports
 ```
 
 Les en-têtes canoniques sont obligatoires ; les cellules bibliographiques

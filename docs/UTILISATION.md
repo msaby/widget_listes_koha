@@ -23,7 +23,7 @@ Pour lancer cette démo, `npm install` et Playwright ne sont pas nécessaires :
 le serveur utilise uniquement les modules fournis avec Node.js.
 
 Le CSV fourni contient les listes **11** et **32**. La conversion produit
-`data/prepareddata.json`, `exports/liste-11.xlsx` et `exports/liste-32.xlsx`.
+`dist/prepareddata.json`, `exports/liste-11.xlsx` et `exports/liste-32.xlsx`.
 Ces fichiers générés sont ignorés par Git : il faut les recréer après clonage.
 `--skip-covers` évite les appels aux fournisseurs et laisse `local_cover_url`
 vide, même si des images existent déjà sur disque. Les exemples avec couverture
@@ -111,14 +111,14 @@ Copier sur votre hébergement HTTP(S), en conservant cette disposition :
   widget/koha-list-widget.js
   widget/koha-list-widget-custom.css    (facultatif)
   widget/koha-list-widget-matomo.js    (facultatif)
-  data/prepareddata.json
+  dist/prepareddata.json
   covers/*.jpg
   exports/liste-*.xlsx
   demo/index.html                    (si la démo est publiée)
   demo/demo.js                       (si la démo est publiée)
 ```
 
-Le CSV, les scripts Python, le cache, les dépendances et les tests restent
+Les exports bruts CSV et JSON, les scripts Python, le cache, les dépendances et les tests restent
 sur la machine de préparation. Le serveur local `scripts/serve.mjs` est un
 outil de démonstration ; la production utilise votre hébergement habituel.
 
@@ -144,7 +144,7 @@ Exemple pour les ressources publiées sous `/selections/` :
 <link rel="stylesheet" href="/selections/widget/koha-list-widget-custom.css">
 
 <koha-list-widget
-  src="/selections/data/prepareddata.json"
+  src="/selections/dist/prepareddata.json"
   list_id="11"
   display="compact"
   limit="200"

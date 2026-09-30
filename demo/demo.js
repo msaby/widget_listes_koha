@@ -5,7 +5,7 @@ for (const widget of document.querySelectorAll('koha-list-widget')) {
   // configuration différente de celle visible. Seul src devient relatif à la
   // racine du site, comme les scripts du bloc d'intégration en haut de page.
   const attributes = [...widget.attributes].map(attribute => {
-    const value = attribute.name === 'src' ? '/data/prepareddata.json' : attribute.value;
+    const value = attribute.name === 'src' ? '/dist/prepareddata.json' : attribute.value;
     // Échapper les caractères réservés pour obtenir du HTML réutilisable.
     const escaped = value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;');
     return `  ${attribute.name}="${escaped}"`;

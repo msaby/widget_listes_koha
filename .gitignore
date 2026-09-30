@@ -2,7 +2,7 @@ __pycache__/
 *.py[cod]
 .vscode/
 .venv/
-/data/prepareddata.json
+/dist/prepareddata.json
 /exports/*.xlsx
 /covers/
 /cover-probe/

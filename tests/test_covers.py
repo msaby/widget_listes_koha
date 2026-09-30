@@ -178,7 +178,7 @@ class CoverTests(unittest.TestCase):
         manager = self.manager(("bnf",))
         manager.provider_image = Mock(return_value=self.jpg)
         copies = [dict(self.document, list_id="11"), dict(self.document, list_id="32")]
-        manager.populate(copies, self.root / "data/prepareddata.json")
+        manager.populate(copies, self.root / "dist/prepareddata.json")
         manager.provider_image.assert_called_once()
         self.assertEqual([doc["local_cover_url"] for doc in copies], ["../covers/272037.jpg"] * 2)
 

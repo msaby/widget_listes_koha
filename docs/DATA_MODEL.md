@@ -124,6 +124,24 @@ Structure :
 `export_xlsx` ne doit être annoncé que si le fichier a été généré avec
 succès.
 
+## Métadonnées de préparation
+
+Le JSON préparé contient un objet `metadata` à la racine, à côté de `lists`
+et `documents` :
+
+``` json
+"metadata": {
+  "generated_at": "2026-09-30T13:00:00+00:00",
+  "source": "json",
+  "document_count": 582,
+  "list_count": 2
+}
+```
+
+`generated_at` est la date et l'heure d'exécution en UTC (ISO 8601).
+`source` vaut `csv` ou `json` selon le format du fichier d'entrée. Les deux
+comptages portent sur les données réellement écrites dans le JSON préparé.
+
 ## 6. Document exemple
 
 ``` json

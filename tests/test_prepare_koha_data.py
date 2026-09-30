@@ -3,6 +3,7 @@
 # unittest découvre les méthodes dont le nom commence par test_. Chaque scénario
 # prépare une entrée, appelle le vrai code puis compare le résultat attendu avec assert*.
 import csv
+from datetime import datetime, timezone
 import json
 from pathlib import Path
 import tempfile
@@ -20,7 +21,7 @@ class PipelineTests(unittest.TestCase):
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name)
         self.source = self.root / "source.csv"
-        self.output = self.root / "data/prepareddata.json"
+        self.output = self.root / "dist/prepareddata.json"
         self.exports = self.root / "exports"
 
     def write_csv(self, rows, fields=FIELDS):
@@ -48,6 +49,11 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(result, json.loads(self.output.read_text(encoding="utf-8")))
         self.assertEqual(len(result["documents"]), 21)
         self.assertEqual(set(result["lists"]), {"11", "32"})
+        self.assertEqual(result["metadata"]["source"], "csv")
+        self.assertEqual(result["metadata"]["document_count"], 21)
+        self.assertEqual(result["metadata"]["list_count"], 2)
+        generated_at = datetime.fromisoformat(result["metadata"]["generated_at"])
+        self.assertEqual(generated_at.tzinfo, timezone.utc)
         document = result["documents"][0]
         self.assertEqual(document["holdings"], [{"library": "MEDP", "callnumber": "É 42 / A"}])
         self.assertEqual(document["isbn"], "0012345678")
@@ -67,7 +73,11 @@ class PipelineTests(unittest.TestCase):
         raw.write_text(json.dumps([[int(row[field]) if field in ("biblionumber", "list_id")
                                      else row.get(field) for field in FIELDS]], ensure_ascii=False), encoding="utf-8")
         actual = convert(raw, self.output, self.exports)
-        self.assertEqual(actual, expected)
+        self.assertEqual(actual["metadata"]["source"], "json")
+        self.assertEqual(actual["metadata"]["document_count"], 1)
+        self.assertEqual(actual["metadata"]["list_count"], 1)
+        self.assertEqual(actual["lists"], expected["lists"])
+        self.assertEqual(actual["documents"], expected["documents"])
 
     def test_raw_json_rejects_wrong_shape(self):
         raw = self.root / "source.json"
@@ -133,7 +143,12 @@ class PipelineTests(unittest.TestCase):
 
     def test_header_only_csv(self):
         self.write_csv([])
-        self.assertEqual(convert(self.source, self.output, self.exports), {"lists": {}, "documents": []})
+        result = convert(self.source, self.output, self.exports)
+        self.assertEqual(result["lists"], {})
+        self.assertEqual(result["documents"], [])
+        self.assertEqual(result["metadata"]["source"], "csv")
+        self.assertEqual(result["metadata"]["document_count"], 0)
+        self.assertEqual(result["metadata"]["list_count"], 0)
 
     def test_json_write_failure_preserves_previous_file(self):
         # Simuler l'échec au tout dernier remplacement vérifie l'écriture atomique

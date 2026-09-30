@@ -47,7 +47,7 @@ npm start</code></pre>
       Le JSON et les Excel doivent être générés avant de consulter les exemples.
       Avec <code>--skip-covers</code>, les emplacements de couverture restent vides.</p>
     <p>Charger le composant une seule fois dans la page hôte, puis reprendre le code d'un exemple.
-      Les chemins ci-dessous supposent les dossiers <code>widget/</code> et <code>data/</code> à la racine du site :</p>
+      Les chemins ci-dessous supposent les dossiers <code>widget/</code> et <code>dist/</code> à la racine du site :</p>
     <pre><code>&lt;script type="module" src="/widget/koha-list-widget.js"&gt;&lt;/script&gt;
 &lt;link rel="stylesheet" href="/widget/koha-list-widget-custom.css"&gt;
 &lt;!-- Facultatif, pour Matomo configuré par le site hôte : --&gt;
@@ -58,27 +58,27 @@ npm start</code></pre>
   <noscript>JavaScript doit être activé pour afficher les sélections et les exemples d'intégration.</noscript>
   <section id="carousel"><h2>À parcourir</h2>
     <p>Sans défilement automatique. Essayez les flèches, la recherche et le bouton de repli. Le lien « Voir plus de résultats » ouvre l'URL fournie. Au clavier, utilisez Tab, puis Gauche/Droite ou Début/Fin dans les documents.</p>
-    <koha-list-widget analytics-id="demo-carousel-11" src="../data/prepareddata.json" list_id="11" display="carousel" limit="30" searchable show-list-name export="xlsx" visibility="collapsible" more-results-url="https://exameple.com"></koha-list-widget>
+    <koha-list-widget analytics-id="demo-carousel-11" src="../dist/prepareddata.json" list_id="11" display="carousel" limit="30" searchable show-list-name export="xlsx" visibility="collapsible" more-results-url="https://exameple.com"></koha-list-widget>
   </section>
   <section id="grid"><h2>En grille</h2>
     <p>Six documents par page, triés par titre. Changez de page en haut puis en bas : les deux paginations restent synchronisées.</p>
-    <koha-list-widget analytics-id="demo-grid-32" src="../data/prepareddata.json" list_id="32" display="grid" limit="100" paginate="6" sort="title" searchable show-list-name export="xlsx"></koha-list-widget>
+    <koha-list-widget analytics-id="demo-grid-32" src="../dist/prepareddata.json" list_id="32" display="grid" limit="100" paginate="6" sort="title" searchable show-list-name export="xlsx"></koha-list-widget>
   </section>
   <section id="list"><h2>En liste</h2>
     <p>Les publications les plus récentes apparaissent d'abord. Recherchez un mot, puis téléchargez l'Excel : il conserve toute la liste.</p>
-    <koha-list-widget analytics-id="demo-list-11" src="../data/prepareddata.json" list_id="11" display="list" limit="100" paginate="5" searchable show-list-name sort="date" export="xlsx"></koha-list-widget>
+    <koha-list-widget analytics-id="demo-list-11" src="../dist/prepareddata.json" list_id="11" display="list" limit="100" paginate="5" searchable show-list-name sort="date" export="xlsx"></koha-list-widget>
   </section>
   <section id="compact"><h2>Vue compacte</h2>
     <p>Une ligne par document, sans couverture. Réduisez la fenêtre pour observer la troncature visuelle ; les textes complets restent accessibles.</p>
-    <koha-list-widget analytics-id="demo-compact-32" src="../data/prepareddata.json" list_id="32" display="compact" limit="100" paginate="10" searchable show-list-name export="xlsx"></koha-list-widget>
+    <koha-list-widget analytics-id="demo-compact-32" src="../dist/prepareddata.json" list_id="32" display="compact" limit="100" paginate="10" searchable show-list-name export="xlsx"></koha-list-widget>
   </section>
   <section id="autoplay"><h2>Défilement automatique</h2>
     <p>Délai par défaut : cinq secondes, sans export Excel. Éloignez le pointeur et le focus pour observer le mouvement, puis essayez Pause/Reprendre. La préférence système de réduction des mouvements désactive l'autoplay.</p>
-    <koha-list-widget analytics-id="demo-autoplay-32" src="../data/prepareddata.json" list_id="32" display="carousel" limit="30" autoplay show-list-name visibility="collapsible" description="Le défilement s’arrête pendant la lecture au clavier ou au survol. Vous pouvez aussi le mettre en pause."></koha-list-widget>
+    <koha-list-widget analytics-id="demo-autoplay-32" src="../dist/prepareddata.json" list_id="32" display="carousel" limit="30" autoplay show-list-name visibility="collapsible" description="Le défilement s’arrête pendant la lecture au clavier ou au survol. Vous pouvez aussi le mettre en pause."></koha-list-widget>
   </section>
   <section id="rapide"><h2>Défilement rapide, sélection repliée</h2>
     <p>Dépliez la sélection pour essayer le délai de 1 000 ms. Quittez ensuite le widget avec le pointeur et le clavier pour laisser le défilement reprendre.</p>
-    <koha-list-widget analytics-id="demo-rapide-11" src="../data/prepareddata.json" list_id="11" display="carousel" limit="12" autoplay autoplay-delay="1000" show-list-name visibility="collapsed"></koha-list-widget>
+    <koha-list-widget analytics-id="demo-rapide-11" src="../dist/prepareddata.json" list_id="11" display="carousel" limit="12" autoplay autoplay-delay="1000" show-list-name visibility="collapsed"></koha-list-widget>
   </section>
   <p tabindex="-1">Fin des sélections.</p>
   <section id="analytics"><h2>Observer les événements</h2>

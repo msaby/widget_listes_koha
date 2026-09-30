@@ -37,6 +37,7 @@ Structure cible :
 ``` text
 koha-list-widget/
 ├── data/
+├── dist/prepareddata.json
 ├── scripts/prepare_koha_data.py
 ├── widget/
 │   ├── koha-list-widget.js
@@ -719,7 +720,7 @@ Compact :
 
 ``` html
 <koha-list-widget
-  src="/data/prepareddata.json"
+  src="/dist/prepareddata.json"
   list_id="11"
   display="compact"
   paginate="40"
@@ -735,7 +736,7 @@ Carrousel complet :
 
 ``` html
 <koha-list-widget
-  src="/data/prepareddata.json"
+  src="/dist/prepareddata.json"
   list_id="11"
   display="carousel"
   limit="200"

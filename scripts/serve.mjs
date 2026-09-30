@@ -22,7 +22,7 @@ http.createServer(async (request, response) => {
   try {
     const pathname = decodeURIComponent(new URL(request.url, 'http://localhost').pathname);
     const relative = pathname === '/' ? 'demo/index.html' : pathname.slice(1);
-    if (!/^(demo|widget|data|covers|exports|tests\/fixtures)\//.test(relative)
+    if (!/^(demo|widget|dist|covers|exports|tests\/fixtures)\//.test(relative)
         // Ne pas exposer tout le dépôt : autoriser seulement les dossiers publics
         // et refuser les segments cachés ou les séparateurs de chemin Windows.
         || relative.split('/').some(segment => segment.startsWith('.')) || relative.includes('\\')) {

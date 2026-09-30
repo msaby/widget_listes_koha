@@ -10,6 +10,7 @@ import argparse
 from collections import defaultdict
 from contextlib import contextmanager
 import csv
+from datetime import datetime, timezone
 import json
 import logging
 import os
@@ -226,8 +227,10 @@ def convert(csv_path, json_path, exports_dir, delimiter=";", *, covers_dir=None,
     # de dictionnaire Python, ce qui permet aux tests de vérifier son contenu.
     source_path = Path(csv_path)
     if source_path.suffix.lower() == ".json":
+        source_format = "json"
         documents = read_json_documents(source_path)
     elif source_path.suffix.lower() == ".csv":
+        source_format = "csv"
         documents = read_documents(source_path, delimiter)
     else:
         raise ValueError("--input doit désigner un fichier .csv ou .json")
@@ -267,7 +270,16 @@ def convert(csv_path, json_path, exports_dir, delimiter=";", *, covers_dir=None,
             # On ne publie donc un lien de téléchargement qu'après création du XLSX.
             lists[list_id]["export_xlsx"] = relative_url
             exports_count += 1
-    payload = {"lists": lists, "documents": documents}
+    payload = {
+        "metadata": {
+            "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            "source": source_format,
+            "document_count": len(documents),
+            "list_count": len(lists),
+        },
+        "lists": lists,
+        "documents": documents,
+    }
     # ensure_ascii=False garde les accents lisibles ; indent=2 facilite l'inspection.
     # Cet export utilise tous les documents : recherche et pagination appartiennent
     # au navigateur et n'ont aucun effet sur les fichiers produits ici.
@@ -285,7 +297,7 @@ def main(argv=None):
     # automatiquement --help. argv=None lit le terminal ; les tests passent une liste.
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", type=Path, default=ROOT / "data/kohadata.csv")
-    parser.add_argument("--output", type=Path, default=ROOT / "data/prepareddata.json")
+    parser.add_argument("--output", type=Path, default=ROOT / "dist/prepareddata.json")
     parser.add_argument("--exports-dir", type=Path, default=ROOT / "exports")
     parser.add_argument("--delimiter", default=";")
     parser.add_argument("--covers-dir", type=Path, default=ROOT / "covers")
