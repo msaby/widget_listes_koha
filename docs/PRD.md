@@ -449,6 +449,8 @@ longs, vrais hyperliens, aucune image.
 Le bouton n'apparaît qu'avec `export="xlsx"` et utilise `export_xlsx`
 fourni dans les métadonnées JSON. Libellé recommandé : « Télécharger la
 liste complète au format Excel ».
+Avec `library-filter`, le téléchargement doit contenir seulement les documents
+retenus par ce filtre, y compris pour plusieurs codes séparés par des virgules.
 
 ## 8. API du Web Component
 

@@ -188,7 +188,7 @@ module dans le modèle de page si les scripts des blocs sont supprimés.
 | `show-list-name`, `list`, `description` | Afficher le nom, le remplacer ou ajouter une description. |
 | `visibility` | `collapsible` pour commencer ouvert, `collapsed` pour commencer fermé. |
 | `autoplay`, `autoplay-delay` | Carrousel automatique, délai en millisecondes, 5000 par défaut. |
-| `export="xlsx"` | Afficher au-dessus des résultats un lien discret vers l'Excel complet, à côté de la pagination supérieure si elle est présente. |
+| `export="xlsx"` | Afficher au-dessus des résultats le lien Excel, filtré par bibliothèque si `library-filter` est actif. |
 | `more-results-url` | Afficher sous le widget « Voir plus de résultats » vers l'URL fournie. Accepte une URL HTTP(S), absolue ou relative à la page. |
 
 Les attributs booléens s'activent **par leur présence** : pour désactiver
@@ -196,8 +196,9 @@ Les attributs booléens s'activent **par leur présence** : pour désactiver
 La réduction des mouvements désactive toujours l'autoplay.
 
 Pour paginer plus de douze documents, fixer aussi `limit` à une valeur
-suffisante. Le téléchargement Excel contient toute la liste, même après une
-recherche, un filtre de bibliothèque ou une limite d'affichage. Il inclut les résumés et les
+suffisante. Le téléchargement Excel applique `library-filter` lorsque des
+bibliothèques demandées existent dans le JSON. Il ignore la recherche, la
+pagination et la limite d'affichage. Il inclut les résumés et les
 exemplaires, avec un exemplaire par ligne dans une cellule. Le widget
 n'affiche ni ne recherche ces deux champs.
 

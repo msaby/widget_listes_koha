@@ -39,6 +39,94 @@ function url(value, base) {
   try { const result = new URL(value, base); return /^https?:$/.test(result.protocol) ? result.href : ''; }
   catch { return ''; }
 }
+const XLSX_HEADERS = ['Lien catalogue', 'Type de document', 'Titre', 'Auteur', 'ISBN', 'EAN',
+  'Date', 'Éditeur', 'Pages', 'Résumé', 'Exemplaires', 'Liste'];
+const XLSX_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+const xml = value => text(value).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '')
+  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+
+function zipFiles(files) {
+  // Un XLSX est une archive ZIP. Les entrées non compressées restent lisibles
+  // par Excel et évitent une dépendance ou un service externe dans la page.
+  const encoder = new TextEncoder();
+  const chunks = [], directory = [];
+  let offset = 0;
+  const crcTable = Array.from({ length: 256 }, (_, index) => {
+    let value = index;
+    for (let bit = 0; bit < 8; bit++) value = value & 1 ? 0xedb88320 ^ (value >>> 1) : value >>> 1;
+    return value >>> 0;
+  });
+  for (const [name, content] of Object.entries(files)) {
+    const nameBytes = encoder.encode(name), body = encoder.encode(content);
+    let crc = 0xffffffff;
+    for (const byte of body) crc = crcTable[(crc ^ byte) & 0xff] ^ (crc >>> 8);
+    crc = (crc ^ 0xffffffff) >>> 0;
+    const local = new Uint8Array(30), localView = new DataView(local.buffer);
+    localView.setUint32(0, 0x04034b50, true);
+    localView.setUint16(4, 20, true);
+    localView.setUint16(6, 0x0800, true);
+    localView.setUint32(14, crc, true);
+    localView.setUint32(18, body.length, true);
+    localView.setUint32(22, body.length, true);
+    localView.setUint16(26, nameBytes.length, true);
+    chunks.push(local, nameBytes, body);
+
+    const entry = new Uint8Array(46), view = new DataView(entry.buffer);
+    view.setUint32(0, 0x02014b50, true);
+    view.setUint16(4, 20, true);
+    view.setUint16(6, 20, true);
+    view.setUint16(8, 0x0800, true);
+    view.setUint32(16, crc, true);
+    view.setUint32(20, body.length, true);
+    view.setUint32(24, body.length, true);
+    view.setUint16(28, nameBytes.length, true);
+    view.setUint32(42, offset, true);
+    directory.push(entry, nameBytes);
+    offset += local.length + nameBytes.length + body.length;
+  }
+  const directorySize = directory.reduce((sum, part) => sum + part.length, 0);
+  const end = new Uint8Array(22), endView = new DataView(end.buffer);
+  endView.setUint32(0, 0x06054b50, true);
+  endView.setUint16(8, Object.keys(files).length, true);
+  endView.setUint16(10, Object.keys(files).length, true);
+  endView.setUint32(12, directorySize, true);
+  endView.setUint32(16, offset, true);
+  return new Blob([...chunks, ...directory, end], { type: XLSX_TYPE });
+}
+
+function filteredWorkbook(documents, dataUrl) {
+  const cell = (reference, value, style = 0) => `<c r="${reference}" s="${style}" t="inlineStr"><is><t xml:space="preserve">${xml(value)}</t></is></c>`;
+  const rows = [`<row r="1">${XLSX_HEADERS.map((value, index) => cell(`${String.fromCharCode(65 + index)}1`, value, 1)).join('')}</row>`];
+  const hyperlinks = [], relations = [];
+  for (const [index, doc] of documents.entries()) {
+    const number = index + 2;
+    const holdings = Array.isArray(doc.holdings) ? doc.holdings.map(item => {
+      if (!item || typeof item !== 'object') return '';
+      return [text(item.library), text(item.location), item.callnumber ? `cote ${text(item.callnumber)}` : '']
+        .filter(Boolean).join(' — ');
+    }).filter(Boolean).join('\n') : '';
+    const values = ['Voir dans le catalogue', doc.document_type,
+      [text(doc.title), text(doc.subtitle)].filter(Boolean).join(' : '), doc.authors,
+      doc.isbn, doc.ean, doc.date, doc.publisher, doc.pages, doc.abstract, holdings, doc.list];
+    rows.push(`<row r="${number}">${values.map((value, column) => cell(`${String.fromCharCode(65 + column)}${number}`, value, column === 0 ? 2 : 0)).join('')}</row>`);
+    const target = url(doc.record_url, dataUrl) || PRIMO + encodeURIComponent(text(doc.biblionumber));
+    hyperlinks.push(`<hyperlink ref="A${number}" r:id="rId${index + 1}"/>`);
+    relations.push(`<Relationship Id="rId${index + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="${xml(target)}" TargetMode="External"/>`);
+  }
+  const widths = [25, 20, 55, 35, 22, 22, 12, 30, 22, 70, 48, 30];
+  const sheet = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>${widths.map((width, index) => `<col min="${index + 1}" max="${index + 1}" width="${width}" customWidth="1"/>`).join('')}</cols><sheetData>${rows.join('')}</sheetData><autoFilter ref="A1:L${documents.length + 1}"/><hyperlinks>${hyperlinks.join('')}</hyperlinks></worksheet>`;
+  const files = {
+    '[Content_Types].xml': '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>',
+    '_rels/.rels': '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>',
+    'xl/workbook.xml': '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Documents" sheetId="1" r:id="rId1"/></sheets></workbook>',
+    'xl/_rels/workbook.xml.rels': '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>',
+    'xl/styles.xml': '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="3"><font/><font><b/><color rgb="FFFFFFFF"/></font><font><u/><color rgb="FF0563C1"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF28556B"/></patternFill></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="3"><xf numFmtId="49" fontId="0" fillId="0" borderId="0" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf><xf numFmtId="49" fontId="1" fillId="1" borderId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf><xf numFmtId="49" fontId="2" fillId="0" borderId="0" applyFont="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>',
+    'xl/worksheets/sheet1.xml': sheet,
+    'xl/worksheets/_rels/sheet1.xml.rels': `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${relations.join('')}</Relationships>`,
+  };
+  return zipFiles(files);
+}
 function element(tag, attributes = {}, content) {
   // Fabrique un élément du DOM (la représentation de la page en mémoire).
   // textContent affiche les données comme du texte : un titre contenant <img>
@@ -189,6 +277,8 @@ export class KohaListWidget extends HTMLElement {
     // ni écouteur global actif. Cela évite aussi des mises à jour sur des éléments supprimés.
     this.lifecycle?.abort();
     this.request?.abort();
+    if (this.exportObjectUrl) URL.revokeObjectURL(this.exportObjectUrl);
+    this.exportObjectUrl = null;
     this.loadVersion++;
     this.clearTimers();
     this.skipTarget?.remove();
@@ -299,6 +389,8 @@ export class KohaListWidget extends HTMLElement {
     // Lors d'une simple saisie ou d'une pagination, updateResults() suffit : on
     // évite alors de recréer le champ dans lequel l'utilisateur est en train d'écrire.
     this.clearTimers();
+    if (this.exportObjectUrl) URL.revokeObjectURL(this.exportObjectUrl);
+    this.exportObjectUrl = null;
     const active = this.shadowRoot.activeElement;
     const focusKey = active?.dataset.focus;
     // ?. lit une propriété uniquement si l'objet existe. data-focus identifie un
@@ -319,7 +411,8 @@ export class KohaListWidget extends HTMLElement {
     const inLibrary = doc => Array.isArray(doc?.holdings) && doc.holdings.some(item =>
       item && libraries.has(text(item.library).trim().toUpperCase()));
     // Un code absent de tout le JSON laisse la sélection entière visible.
-    if (libraries.size && documents.some(inLibrary)) this.selection = this.selection.filter(inLibrary);
+    this.libraryFilterActive = libraries.size > 0 && documents.some(inLibrary);
+    if (this.libraryFilterActive) this.selection = this.selection.filter(inLibrary);
     const name = this.getAttribute('list') || text(this.metadata.list) || text(this.selection[0]?.list) || 'Sélection de documents';
     const sheet = element('style', {}, styles);
     this.region = element('section', { class: `widget ${this.mode}`, part: `widget ${this.mode}`, role: 'region', 'aria-label': name });
@@ -408,8 +501,14 @@ export class KohaListWidget extends HTMLElement {
     this.paginationTop = element('nav', { class: 'pagination', part: 'pagination pagination-top', 'aria-label': 'Pagination en haut de la sélection' });
     resultsControls.append(this.paginationTop);
     if (this.getAttribute('export') === 'xlsx' && exportUrl) {
-      const link = element('a', { class: 'export', part: 'export', href: exportUrl, download: '', 'data-focus': 'export' });
-      link.append(element('span', { class: 'action-icon', 'aria-hidden': 'true' }, '⤓'), 'Télécharger la liste complète au format Excel');
+      const filtered = this.libraryFilterActive;
+      const href = filtered ? URL.createObjectURL(filteredWorkbook(this.selection, this.dataUrl)) : exportUrl;
+      if (filtered) this.exportObjectUrl = href;
+      const codes = [...libraries].join('-').replace(/[^A-Z0-9_-]/g, '_').slice(0, 80);
+      const filename = filtered ? `liste-${this.listId}-${codes || 'bibliotheques'}.xlsx` : '';
+      const link = element('a', { class: 'export', part: 'export', href, download: filename, 'data-focus': 'export' });
+      link.append(element('span', { class: 'action-icon', 'aria-hidden': 'true' }, '⤓'),
+        filtered ? 'Télécharger la sélection filtrée au format Excel' : 'Télécharger la liste complète au format Excel');
       this.trackLink(link, 'excel_download');
       resultsControls.append(link);
     }

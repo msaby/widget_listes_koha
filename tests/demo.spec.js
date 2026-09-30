@@ -1,4 +1,5 @@
 import { existsSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import { test, expect } from '@playwright/test';
 
 // Ce test complète les données simulées de widget.spec.js avec les fichiers
@@ -21,7 +22,8 @@ test('démo avec les données générées, captures des quatre modes', async ({ 
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   // La livraison doit inclure les vrais fichiers annoncés par le JSON.
   // Un XLSX est une archive ZIP : ses deux premiers octets sont « PK ».
-  const exports = await page.locator('koha-list-widget .export').evaluateAll(links => [...new Set(links.map(link => link.href))]);
+  const exports = await page.locator('koha-list-widget .export').evaluateAll(links =>
+    [...new Set(links.map(link => link.href).filter(href => href.startsWith('http')))]);
   expect(exports).toHaveLength(2);
   for (const url of exports) {
     const response = await page.request.get(url);
@@ -29,6 +31,13 @@ test('démo avec les données générées, captures des quatre modes', async ({ 
     expect(response.headers()['content-type']).toContain('spreadsheetml.sheet');
     expect((await response.body()).subarray(0, 2).toString()).toBe('PK');
   }
+  const filtered = page.locator('#scien koha-list-widget .export');
+  await expect(filtered).toHaveAttribute('href', /^blob:/);
+  const [download] = await Promise.all([page.waitForEvent('download'), filtered.click()]);
+  expect(download.suggestedFilename()).toBe('liste-11-SCIEN.xlsx');
+  const destination = testInfo.outputPath('scien.xlsx');
+  await download.saveAs(destination);
+  expect((await readFile(destination)).subarray(0, 2).toString()).toBe('PK');
   // Une page plus large que la fenêtre signalerait un débordement horizontal global.
   expect(errors).toEqual([]);
 });

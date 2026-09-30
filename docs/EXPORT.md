@@ -3,11 +3,14 @@
 ## 1. Principe
 
 Python génère **un XLSX par liste Koha** pendant le traitement
-quotidien. Le navigateur ne génère aucun Excel.
+quotidien. Sans filtre de bibliothèque actif, le widget télécharge ce fichier.
+Avec `library-filter`, le navigateur crée un XLSX contenant seulement les
+documents de la liste ayant un exemplaire dans les bibliothèques demandées.
+Si aucun code demandé n'existe dans le JSON, le fichier complet reste utilisé.
 
-Le classeur contient toute la liste, sans tenir compte de `display`,
-`limit`, `paginate`, recherche, page, visibility, autoplay ou tri
-d'affichage.
+Le classeur contient tous les documents retenus par le filtre de bibliothèque,
+sans tenir compte de `display`, `limit`, `paginate`, recherche, page,
+visibility, autoplay ou tri d'affichage.
 
 ## 2. Colonnes
 
@@ -146,3 +149,6 @@ Convention :
 ``` text
 liste-{list_id}.xlsx
 ```
+
+Pour un téléchargement filtré, le navigateur propose par exemple
+`liste-11-SCIEN.xlsx` ou `liste-11-SCIEN-LASH.xlsx`.

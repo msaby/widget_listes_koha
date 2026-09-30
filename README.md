@@ -60,7 +60,7 @@ Le Web Component `<koha-list-widget>` propose :
 -   affichage repliable ;
 -   autoplay facultatif du carrousel ;
 -   liens vers les notices Primo ;
--   téléchargement de la liste complète au format Excel ;
+-   téléchargement Excel de la liste complète ou filtrée par bibliothèque ;
 -   récupération et cache local des couvertures ;
 -   prise en compte des exemplaires via `holdings` ;
 -   filtre facultatif par bibliothèque avec `library-filter="SCIEN,LASH"` ;
@@ -243,11 +243,12 @@ Le cache négatif est propre aux fournisseurs externes. Les échecs de
 
 ## Export Excel
 
-Un fichier XLSX est généré à l'avance pour chaque liste Koha.
+Un fichier XLSX est généré à l'avance pour chaque liste Koha. Si
+`library-filter` est actif, le widget produit un XLSX filtré au téléchargement.
 
-Il contient toujours la **liste complète**, indépendamment de la
-recherche, de la pagination, de `limit` ou du mode d'affichage du
-widget.
+L'Excel contient tous les documents retenus par le filtre de bibliothèque,
+indépendamment de la recherche, de la pagination, de `limit` ou du mode
+d'affichage du widget.
 
 Colonnes :
 

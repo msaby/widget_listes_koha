@@ -192,7 +192,12 @@ Carousel uniquement. Désactivé par défaut.
 Si `export="xlsx"` et que la liste possède `export_xlsx`, afficher le
 bouton. Sinon aucun lien aveugle vers une ressource inexistante.
 
-Libellé : « Télécharger la liste complète au format Excel ».
+Sans filtre actif, le lien télécharge l'Excel complet préparé par Python et
+porte le libellé « Télécharger la liste complète au format Excel ». Avec
+`library-filter`, il télécharge un XLSX généré dans le navigateur à partir des
+documents filtrés et porte le libellé « Télécharger la sélection filtrée au
+format Excel ». La recherche, la pagination et `limit` ne réduisent pas le
+contenu du classeur.
 Le lien se place au-dessus des résultats, aligné sur le bord droit du widget
 et sur le bas de la pagination supérieure ou des flèches du carrousel. Il est
 présenté sans bordure, avec un texte plus petit et un symbole de téléchargement.

@@ -5,6 +5,7 @@
 // pendant un court délai, car le chargement et le rendu sont asynchrones.
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { readFile } from 'node:fs/promises';
 
 const documents = Array.from({ length: 43 }, (_, index) => ({
   // Jeu de données reproductible, avec plus de documents que la limite par défaut.
@@ -88,6 +89,40 @@ test('filtre les documents par bibliothèque sans recharger le JSON', async ({ p
   await widget.evaluate(node => node.setAttribute('library-filter', ''));
   await expect(widget.locator('.book')).toHaveCount(4);
   expect(requests).toBe(1);
+});
+
+test('l’Excel téléchargé contient uniquement les documents de la bibliothèque filtrée', async ({ page }, testInfo) => {
+  const data = { ...payload, documents: [
+    { ...documents[0], title: 'Sciences', holdings: [{ library: 'SCIEN', location: 'DOC' }] },
+    { ...documents[1], title: 'Lettres', holdings: [{ library: 'LASH' }] },
+    { ...documents[2], title: 'Sciences et lettres', holdings: [{ library: 'SCIEN' }, { library: 'LASH' }] },
+  ] };
+  const widget = await mount(page, { display: 'list', export: 'xlsx', 'library-filter': 'SCIEN' }, data);
+  const link = widget.getByRole('link', { name: 'Télécharger la sélection filtrée au format Excel' });
+  await expect(link).toHaveAttribute('href', /^blob:/);
+  const [download] = await Promise.all([page.waitForEvent('download'), link.click()]);
+  expect(download.suggestedFilename()).toBe('liste-11-SCIEN.xlsx');
+  const destination = testInfo.outputPath('filtered.xlsx');
+  await download.saveAs(destination);
+  const workbook = await readFile(destination);
+  expect(workbook.subarray(0, 2).toString()).toBe('PK');
+  expect(workbook.toString('utf8')).toContain('Sciences et lettres');
+  expect(workbook.toString('utf8')).not.toContain('>Lettres<');
+  expect((workbook.toString('utf8').match(/<row r="\d+">/g) || [])).toHaveLength(3);
+
+  await widget.evaluate(node => node.setAttribute('library-filter', 'SCIEN,LASH'));
+  const combined = widget.getByRole('link', { name: 'Télécharger la sélection filtrée au format Excel' });
+  const [combinedDownload] = await Promise.all([page.waitForEvent('download'), combined.click()]);
+  expect(combinedDownload.suggestedFilename()).toBe('liste-11-SCIEN-LASH.xlsx');
+  const combinedPath = testInfo.outputPath('combined.xlsx');
+  await combinedDownload.saveAs(combinedPath);
+  const combinedWorkbook = (await readFile(combinedPath)).toString('utf8');
+  expect(combinedWorkbook).toContain('>Lettres<');
+  expect((combinedWorkbook.match(/<row r="\d+">/g) || [])).toHaveLength(4);
+
+  await widget.evaluate(node => node.setAttribute('library-filter', 'INCONNUE'));
+  await expect(widget.getByRole('link', { name: 'Télécharger la liste complète au format Excel' }))
+    .toHaveAttribute('href', 'http://127.0.0.1:4173/exports/liste-11.xlsx');
 });
 
 for (const mode of ['carousel', 'grid', 'list', 'compact']) {
