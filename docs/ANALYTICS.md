@@ -71,6 +71,8 @@ first_visible_position
 
 Déclencher après stabilisation (\~250 ms), pas sur chaque événement DOM
 `scroll`.
+Lors d'un retour en boucle, `direction` garde le sens du bouton actionné
+(`previous` ou `next`), même si le déplacement visuel va dans l'autre sens.
 
 ### `autoplay_toggle`
 

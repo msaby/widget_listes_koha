@@ -286,17 +286,49 @@ test('pagination synchronisée et focus conservé dans la pagination utilisée',
   const widget = await mount(page, { display: 'grid', searchable: '', limit: '43', paginate: '10' });
   const top = widget.getByRole('navigation', { name: 'Pagination en haut de la sélection' });
   const bottom = widget.getByRole('navigation', { name: 'Pagination en bas de la sélection' });
-  await expect(top.getByRole('button', { name: 'Précédent' })).toBeDisabled();
+  await expect(top.getByRole('button', { name: 'Précédent' })).toBeEnabled();
   await bottom.getByRole('button', { name: 'Suivant' }).click();
   await expect(widget.locator('.title').first()).toHaveText('Document 11');
   await expect(widget.locator('.book').first()).toHaveAttribute('aria-posinset', '11');
   await expect(bottom.getByRole('button', { name: 'Suivant' })).toBeFocused();
   await expect(top.locator('[aria-current="page"]')).toHaveText('2');
   await top.getByRole('button', { name: 'Page 5', exact: true }).click();
-  await expect(top.getByRole('button', { name: 'Suivant' })).toBeDisabled();
+  await expect(top.getByRole('button', { name: 'Suivant' })).toBeEnabled();
   await expect(widget.locator('.book')).toHaveCount(3);
   await widget.getByRole('searchbox').fill('Élodie');
   await expect(top.locator('[aria-current="page"]')).toHaveText('1');
+});
+
+for (const display of ['grid', 'list', 'compact']) {
+  test(`Précédent et Suivant bouclent entre les pages en mode ${display}`, async ({ page }) => {
+    const widget = await mount(page, { display, limit: '43', paginate: '10' });
+    const top = widget.getByRole('navigation', { name: 'Pagination en haut de la sélection' });
+    const bottom = widget.getByRole('navigation', { name: 'Pagination en bas de la sélection' });
+    await top.getByRole('button', { name: 'Précédent', exact: true }).click();
+    await expect(top.locator('[aria-current="page"]')).toHaveText('5');
+    await expect(widget.locator('.book').first()).toHaveAttribute('aria-posinset', '41');
+    await expect(top.getByRole('button', { name: 'Précédent', exact: true })).toBeFocused();
+    await bottom.getByRole('button', { name: 'Suivant', exact: true }).click();
+    await expect(bottom.locator('[aria-current="page"]')).toHaveText('1');
+    await expect(widget.locator('.book').first()).toHaveAttribute('aria-posinset', '1');
+    await expect(bottom.getByRole('button', { name: 'Suivant', exact: true })).toBeFocused();
+  });
+}
+
+test('Précédent et Suivant bouclent aux extrémités du carrousel', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const widget = await mount(page, { display: 'carousel', limit: '12' });
+  const books = widget.locator('.books');
+  const previous = widget.locator('[part="prev"]');
+  const next = widget.locator('[part="next"]');
+  await expect(previous).toBeEnabled();
+  await previous.click();
+  await expect.poll(() => books.evaluate(node => Math.round(node.scrollLeft))).toBeGreaterThan(0);
+  const maximum = await books.evaluate(node => Math.round(node.scrollWidth - node.clientWidth));
+  await expect.poll(() => books.evaluate(node => Math.round(node.scrollLeft))).toBe(maximum);
+  await expect(next).toBeEnabled();
+  await next.click();
+  await expect.poll(() => books.evaluate(node => Math.round(node.scrollLeft))).toBe(0);
 });
 
 test('repli conserve nom et description, export complet reste indépendant', async ({ page }) => {
@@ -381,7 +413,7 @@ test('carrousel manuel au clavier et boutons, pagination ignorée', async ({ pag
   const widget = await mount(page, { display: 'carousel', paginate: '2' });
   await expect(widget.locator('.book')).toHaveCount(12);
   await expect(widget.getByRole('navigation')).toHaveCount(0);
-  await expect(widget.getByRole('button', { name: 'Documents précédents' })).toBeDisabled();
+  await expect(widget.getByRole('button', { name: 'Documents précédents' })).toBeEnabled();
   await widget.getByRole('button', { name: 'Documents suivants' }).click();
   await expect.poll(() => widget.locator('.books').evaluate(node => node.scrollLeft)).toBeGreaterThan(100);
   await widget.locator('.book-link').first().focus();

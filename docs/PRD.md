@@ -488,7 +488,8 @@ Le mode par défaut est `carousel`.
 ### 9.1 `carousel`
 
 Cartes avec couvertures et navigation horizontale. Navigation par
-boutons, souris/pavé tactile, tactile et clavier. `paginate` est ignoré.
+boutons, souris/pavé tactile, tactile et clavier. Les boutons Précédent et
+Suivant bouclent entre la fin et le début. `paginate` est ignoré.
 
 ### 9.2 `grid`
 
@@ -600,7 +601,8 @@ Critères : `title`, `authors`, `date`. `sort` surcharge `list_sort`.
 `carousel`.
 
 Pagination haute et basse synchronisée : Précédent, Suivant, numéros,
-`aria-current="page"`, résumé « Page X sur Y », extrémités désactivées.
+`aria-current="page"`, résumé « Page X sur Y ». Précédent depuis la première
+page rejoint la dernière ; Suivant depuis la dernière revient à la première.
 Recherche et pagination fonctionnent ensemble. Les positions des
 documents restent globales, non locales à la page. Le focus reste dans
 la pagination utilisée.

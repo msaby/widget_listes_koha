@@ -195,6 +195,9 @@ Les attributs booléens s'activent **par leur présence** : pour désactiver
 `autoplay`, retirer l'attribut ; `autoplay="false"` l'active quand même.
 La réduction des mouvements désactive toujours l'autoplay.
 
+Les boutons Précédent et Suivant bouclent dans tous les modes : entre les
+extrémités du carrousel ou entre la première et la dernière page.
+
 Pour paginer plus de douze documents, fixer aussi `limit` à une valeur
 suffisante. Le téléchargement Excel applique `library-filter` lorsque des
 bibliothèques demandées existent dans le JSON. Il ignore la recherche, la

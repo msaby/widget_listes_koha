@@ -155,6 +155,10 @@ Grid/list/compact uniquement. Contrôles haut + bas synchronisés :
 -   `aria-current="page"` ;
 -   Page X sur Y.
 
+Précédent sur la première page va à la dernière ; Suivant sur la dernière
+revient à la première. Les contrôles restent disponibles tant qu'il existe
+plusieurs pages.
+
 Positions analytiques globales. Le focus reste dans le contrôle utilisé.
 
 ## 8. Visibility
@@ -247,13 +251,14 @@ autorisé par le serveur de données si les origines diffèrent.
 
 La navigation clavier du carrousel utilise Gauche/Droite et Début/Fin.
 L'autoplay avance d'une carte à la fois et revient au début après la fin ;
+les boutons Précédent et Suivant bouclent aussi aux extrémités du carrousel ;
 il est également suspendu lorsque l'onglet du navigateur est masqué.
 Une interaction terminée laisse passer un délai complet avant reprise.
 La pause explicite est conservée lors des changements de présentation.
 
 Les numéros de pagination sont regroupés autour de la page courante, avec
-accès à la première et à la dernière page. Lorsque le bouton utilisé devient
-désactivé, le focus passe au numéro de la page courante dans la même barre.
+accès à la première et à la dernière page. Le focus reste sur le bouton
+Précédent ou Suivant utilisé après le changement de page.
 La recherche attend 180 ms après la saisie avant de mettre à jour les résultats.
 
 Le bouton de sortie crée une cible de focus dans le DOM principal juste

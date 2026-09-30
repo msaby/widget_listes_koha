@@ -127,6 +127,7 @@ Compact :
 ## 10. Accessibilité
 
 -   navigation clavier complète ;
+-   boucle des boutons Précédent/Suivant dans les quatre modes ;
 -   focus visible ;
 -   vrais liens/boutons ;
 -   nouvel onglet annoncé ;

@@ -97,6 +97,17 @@ test('carrousel : boutons et clavier après stabilisation', async ({ page }) => 
   expect((await events(page))[1]).toMatchObject({ navigation_type: 'scroll', direction: 'previous', first_visible_position: 1 });
 });
 
+test('carrousel : les événements conservent le sens des boutons lors de la boucle', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const widget = await mount(page);
+  await widget.locator('[part="prev"]').click();
+  await expect.poll(async () => (await events(page)).length).toBe(1);
+  expect((await events(page))[0]).toMatchObject({ event: 'carousel_navigate', navigation_type: 'button', direction: 'previous' });
+  await widget.locator('[part="next"]').click();
+  await expect.poll(async () => (await events(page)).length).toBe(2);
+  expect((await events(page))[1]).toMatchObject({ event: 'carousel_navigate', navigation_type: 'button', direction: 'next' });
+});
+
 test('carrousel : un événement par geste, aucun pour un scroll programmatique ou sans déplacement', async ({ page }) => {
   const widget = await mount(page);
   // Désactiver le snap dans ce scénario permet de vérifier une carte partielle.

@@ -649,16 +649,19 @@ export class KohaListWidget extends HTMLElement {
     // Leur différence donne la dernière position de défilement possible.
     if (!this.previousButton || !this.nextButton) return;
     const maximum = this.books.scrollWidth - this.books.clientWidth;
-    this.previousButton.disabled = this.books.scrollLeft <= 1;
-    this.nextButton.disabled = this.books.scrollLeft >= maximum - 1;
+    // Les deux directions restent disponibles aux extrémités pour boucler.
+    const unavailable = maximum <= 1 || this.results.length < 2;
+    this.previousButton.disabled = unavailable;
+    this.nextButton.disabled = unavailable;
   }
 
-  manualInteraction(navigationType = 'scroll') {
+  manualInteraction(navigationType = 'scroll', direction = null) {
     // Marquer le geste suspend temporairement l'autoplay, sans changer paused.
     // Mémoriser son départ avant le mouvement. Un scroll seul (autoplay,
     // redimensionnement ou script hôte) ne crée jamais cette intention manuelle.
     this.pendingNavigation ||= { start: this.books.scrollLeft, navigationType };
     this.pendingNavigation.navigationType = navigationType;
+    this.pendingNavigation.direction = direction;
     this.scrollOrigin = 'manual';
     clearTimeout(this.autoplayTimer);
     clearTimeout(this.scrollTimer);
@@ -681,7 +684,7 @@ export class KohaListWidget extends HTMLElement {
       });
       if (index >= 0) this.emitInteraction('carousel_navigate', {
         navigation_type: pending.navigationType,
-        direction: this.books.scrollLeft > pending.start ? 'next' : 'previous',
+        direction: pending.direction || (this.books.scrollLeft > pending.start ? 'next' : 'previous'),
         first_visible_position: index + 1,
       });
     }
@@ -690,18 +693,21 @@ export class KohaListWidget extends HTMLElement {
   }
 
   navigate(direction, automatic = false) {
-    // direction vaut -1 ou +1. La boucle fin → début concerne uniquement l'autoplay.
+    // direction vaut -1 ou +1 ; les boutons et l'autoplay bouclent aux extrémités.
+    const atStart = this.books.scrollLeft <= 1;
     const atEnd = this.books.scrollLeft >= this.books.scrollWidth - this.books.clientWidth - 2;
-    this.scrollToIndex(automatic && atEnd ? 0 : this.firstVisible() + direction, automatic);
+    const index = direction > 0 && atEnd ? 0
+      : direction < 0 && atStart ? this.results.length - 1 : this.firstVisible() + direction;
+    this.scrollToIndex(index, automatic, 'button', direction > 0 ? 'next' : 'previous');
   }
 
-  scrollToIndex(index, automatic, navigationType = 'button') {
+  scrollToIndex(index, automatic, navigationType = 'button', direction = null) {
     // Math.min/Math.max bornent l'indice pour qu'il désigne toujours une carte.
     // Le navigateur borne à son tour la position réelle à la fin du contenu.
     const item = this.books.children[Math.max(0, Math.min(this.results.length - 1, index))];
     if (!item) return;
     if (automatic) this.pendingNavigation = null;
-    else this.manualInteraction(navigationType);
+    else this.manualInteraction(navigationType, direction);
     clearTimeout(this.autoplayTimer);
     clearTimeout(this.scrollTimer);
     this.scrollOrigin = automatic ? 'autoplay' : 'manual';
@@ -750,9 +756,7 @@ export class KohaListWidget extends HTMLElement {
         const fromPage = this.page;
         this.page = page;
         this.updateResults();
-        const target = [...container.querySelectorAll('button')].find(button => button.dataset.focus === node.dataset.focus && !button.disabled)
-          // Si « Suivant » vient de devenir désactivé, le numéro courant constitue
-          // une cible de focus utilisable dans la même barre de pagination.
+        const target = [...container.querySelectorAll('button')].find(button => button.dataset.focus === node.dataset.focus)
           || container.querySelector('[aria-current="page"]');
         target?.focus({ preventScroll: true });
         this.live.textContent = `Page ${this.page} sur ${this.totalPages}`;
@@ -762,7 +766,7 @@ export class KohaListWidget extends HTMLElement {
       });
       container.append(node);
     };
-    button('Précédent', this.page - 1, 'previous', this.page === 1);
+    button('Précédent', this.page === 1 ? this.totalPages : this.page - 1, 'previous');
     const numbers = new Set([1, this.totalPages]);
     // Set supprime les doublons (notamment page 1 = dernière page). On montre
     // les extrémités et les pages voisines plutôt que des centaines de boutons.
@@ -773,7 +777,7 @@ export class KohaListWidget extends HTMLElement {
       button(String(page), page, 'number');
       previous = page;
     }
-    button('Suivant', this.page + 1, 'next', this.page === this.totalPages);
+    button('Suivant', this.page === this.totalPages ? 1 : this.page + 1, 'next');
     container.append(element('span', { class: 'summary', part: 'pagination-summary' }, `Page ${this.page} sur ${this.totalPages}`));
     this.live.part.add('pagination-status');
   }
