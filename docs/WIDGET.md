@@ -48,8 +48,12 @@ rendu.
 
 ### Carousel
 
-Cartes avec couverture, scroll horizontal natif, boutons
-précédent/suivant. `paginate` ignoré.
+Cartes avec couverture et défilement horizontal natif. Deux boutons affichent
+les chevrons Unicode `❮` et `❯` sur les côtés du carrousel, avec ou sans
+autoplay. Leurs noms accessibles restent « Documents précédents » et
+« Documents suivants », et leurs cibles invisibles mesurent au moins 44 px de large.
+Le chevron se renforce discrètement au survol ; le focus clavier reste visible.
+Ils bouclent aux extrémités. `paginate` est ignoré.
 
 ### Grid
 
@@ -203,7 +207,7 @@ documents filtrés et porte le libellé « Télécharger la sélection filtrée 
 format Excel ». La recherche, la pagination et `limit` ne réduisent pas le
 contenu du classeur.
 Le lien se place au-dessus des résultats, aligné sur le bord droit du widget
-et sur le bas de la pagination supérieure ou des flèches du carrousel. Il est
+et sur le bas de la pagination supérieure si elle est présente. Il est
 présenté sans bordure, avec un texte plus petit et un symbole de téléchargement.
 Les boutons de pause et de reprise
 du carrousel affichent respectivement `Ⅱ` et `▶` devant leur libellé.

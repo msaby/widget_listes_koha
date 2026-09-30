@@ -372,20 +372,45 @@ test('lien Excel aligné à droite et au bas de la pagination supérieure', asyn
   }
 });
 
-test('flèches du carrousel alignées au bas du lien Excel', async ({ page }) => {
-  const widget = await mount(page, { display: 'carousel', export: 'xlsx' });
-  const geometry = await widget.evaluate(node => {
-    const bounds = selector => node.shadowRoot.querySelector(selector).getBoundingClientRect();
-    const row = bounds('.results-controls');
-    const nav = bounds('.results-controls .nav');
-    const link = bounds('.export');
-    return { rowRight: row.right, navBottom: nav.bottom, linkRight: link.right, linkBottom: link.bottom };
+for (const automatic of [false, true]) {
+  test(`chevrons latéraux du carrousel ${automatic ? 'avec' : 'sans'} autoplay`, async ({ page }) => {
+    const widget = await mount(page, { display: 'carousel', export: 'xlsx', 'show-list-name': '',
+      ...(automatic ? { autoplay: '' } : {}) });
+    const previous = widget.getByRole('button', { name: 'Documents précédents' });
+    const next = widget.getByRole('button', { name: 'Documents suivants' });
+    await expect(previous.locator('[aria-hidden="true"]')).toHaveText('❮');
+    await expect(next.locator('[aria-hidden="true"]')).toHaveText('❯');
+    const geometry = await widget.evaluate(node => {
+      const bounds = selector => node.shadowRoot.querySelector(selector).getBoundingClientRect();
+      const stage = bounds('.carousel-stage');
+      const books = bounds('.carousel-stage .books');
+      const left = bounds('[part="prev"]');
+      const right = bounds('[part="next"]');
+      return { stageHeight: stage.height, leftHeight: left.height, rightHeight: right.height,
+        leftRight: left.right, booksLeft: books.left, booksRight: books.right, rightLeft: right.left,
+        leftWidth: left.width, rightWidth: right.width };
+    });
+    expect(geometry.leftHeight).toBe(geometry.stageHeight);
+    expect(geometry.rightHeight).toBe(geometry.stageHeight);
+    expect(geometry.leftWidth).toBeGreaterThanOrEqual(44);
+    expect(geometry.rightWidth).toBeGreaterThanOrEqual(44);
+    expect(geometry.leftRight).toBeLessThanOrEqual(geometry.booksLeft);
+    expect(geometry.booksRight).toBeLessThanOrEqual(geometry.rightLeft);
+    const appearance = async () => previous.evaluate(node => {
+      const style = getComputedStyle(node);
+      return { background: style.backgroundColor, border: style.borderTopWidth };
+    });
+    expect(await appearance()).toEqual({ background: 'rgba(0, 0, 0, 0)', border: '0px' });
+    await previous.hover();
+    expect(await appearance()).toEqual({ background: 'rgba(0, 0, 0, 0)', border: '0px' });
+    await previous.focus();
+    await expect(previous).toBeFocused();
+    if (!automatic) {
+      const accessibility = await new AxeBuilder({ page }).analyze();
+      expect(accessibility.violations).toEqual([]);
+    }
   });
-  expect(Math.abs(geometry.rowRight - geometry.linkRight)).toBeLessThan(2);
-  if (page.viewportSize().width > 600) {
-    expect(Math.abs(geometry.navBottom - geometry.linkBottom)).toBeLessThan(2);
-  }
-});
+}
 
 test('pas de lien Excel sans métadonnée et aucun état partagé entre instances', async ({ page }) => {
   const widget = await mount(page, { display: 'compact', export: 'xlsx', searchable: '' },

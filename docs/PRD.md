@@ -488,8 +488,11 @@ Le mode par défaut est `carousel`.
 ### 9.1 `carousel`
 
 Cartes avec couvertures et navigation horizontale. Navigation par
-boutons, souris/pavé tactile, tactile et clavier. Les boutons Précédent et
-Suivant bouclent entre la fin et le début. `paginate` est ignoré.
+chevrons Unicode `❮` et `❯`, placés sur les côtés du carrousel, avec ou sans
+autoplay ; souris/pavé tactile, tactile et clavier restent utilisables. Les
+chevrons sont de vrais boutons, avec noms accessibles et cibles invisibles d'au moins
+44 px. Le survol renforce discrètement le chevron et le focus clavier reste visible.
+Précédent et Suivant bouclent entre la fin et le début. `paginate` est ignoré.
 
 ### 9.2 `grid`
 

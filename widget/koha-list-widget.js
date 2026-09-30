@@ -154,7 +154,7 @@ const styles = `
 h2,h3,p { margin:0; }
 .heading { font-size:1.4rem; margin-bottom:.5rem; }
 .description { margin-bottom:1rem; color:var(--koha-muted,#495b67); }
-.controls,.nav,.pagination { display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; margin:.75rem 0; }
+.controls,.pagination { display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; margin:.75rem 0; }
 button,input { font:inherit; color:inherit; }
 button { border:1px solid var(--koha-border,#bac5cc); border-radius:.35rem; padding:.55rem .85rem; background:var(--koha-surface,#fff); min-height:44px; }
 button { cursor:pointer; }
@@ -164,8 +164,12 @@ button:hover:not(:disabled) { background:var(--koha-hover,#edf3f6); }
 .visibility-toggle:hover:not(:disabled) { background:var(--koha-hover,#edf3f6); }
 .results-controls { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:end; gap:.5rem 1rem; margin:.75rem 0; }
 .results-controls .pagination { min-width:0; margin:0; }
-.results-controls .nav { margin:0; }
 .results-controls .export { justify-self:end; }
+.carousel-stage { display:grid; grid-template-columns:44px minmax(0,1fr) 44px; gap:4px; align-items:stretch; }
+.carousel-stage .books { min-width:0; }
+.carousel-chevron { display:flex; align-items:center; justify-content:center; width:44px; min-width:44px; min-height:44px; height:100%; padding:0; border:0; border-radius:0; color:var(--koha-accent,#215a73); background:transparent; opacity:.75; transition:opacity .15s ease; }
+.carousel-chevron:hover:not(:disabled), .carousel-chevron:focus-visible { background:transparent; opacity:1; }
+.carousel-chevron span { display:block; font-size:2.5rem; line-height:1; transform:scaleY(1.8); }
 .export { color:var(--koha-muted,#495b67); font-size:.875em; text-decoration:none; white-space:nowrap; }
 .export:hover { color:var(--koha-accent,#215a73); text-decoration:underline; }
 .action-icon { display:inline-block; margin-inline-end:.4em; line-height:1; }
@@ -514,14 +518,16 @@ export class KohaListWidget extends HTMLElement {
     }
     this.paginationBottom = element('nav', { class: 'pagination', part: 'pagination pagination-bottom', 'aria-label': 'Pagination en bas de la sélection' });
     this.books = element('ul', { class: 'books', part: 'books', role: 'list' });
+    this.carouselStage = null;
     if (this.mode === 'carousel') {
-      const nav = element('div', { class: 'nav', part: 'nav' });
-      this.previousButton = element('button', { type: 'button', part: 'prev', 'data-focus': 'prev', 'aria-label': 'Documents précédents' }, '← Précédent');
-      this.nextButton = element('button', { type: 'button', part: 'next', 'data-focus': 'next', 'aria-label': 'Documents suivants' }, 'Suivant →');
+      this.carouselStage = element('div', { class: 'carousel-stage', part: 'carousel-stage' });
+      this.previousButton = element('button', { type: 'button', class: 'carousel-chevron', part: 'prev', 'data-focus': 'prev', 'aria-label': 'Documents précédents' });
+      this.nextButton = element('button', { type: 'button', class: 'carousel-chevron', part: 'next', 'data-focus': 'next', 'aria-label': 'Documents suivants' });
+      this.previousButton.append(element('span', { 'aria-hidden': 'true' }, '❮'));
+      this.nextButton.append(element('span', { 'aria-hidden': 'true' }, '❯'));
       this.previousButton.addEventListener('click', () => this.navigate(-1));
       this.nextButton.addEventListener('click', () => this.navigate(1));
-      nav.append(this.previousButton, this.nextButton);
-      resultsControls.prepend(nav);
+      this.carouselStage.append(this.previousButton, this.books, this.nextButton);
       this.books.tabIndex = 0;
       this.books.setAttribute('aria-label', 'Documents ; utilisez les flèches gauche et droite pour parcourir la sélection');
       this.books.addEventListener('keydown', event => {
@@ -567,7 +573,7 @@ export class KohaListWidget extends HTMLElement {
         toolbar.append(controls);
       }
     }
-    this.content.append(resultsControls, this.books, this.paginationBottom);
+    this.content.append(resultsControls, this.carouselStage || this.books, this.paginationBottom);
     this.updateResults();
     if (focusKey) {
       const replacement = [...this.shadowRoot.querySelectorAll('[data-focus]')].find(node => node.dataset.focus === focusKey);

@@ -197,6 +197,9 @@ La réduction des mouvements désactive toujours l'autoplay.
 
 Les boutons Précédent et Suivant bouclent dans tous les modes : entre les
 extrémités du carrousel ou entre la première et la dernière page.
+Dans le carrousel, ils prennent la forme de chevrons latéraux `❮` et `❯`,
+également avec le défilement automatique. Les autres modes gardent leurs
+boutons de pagination textuels.
 
 Pour paginer plus de douze documents, fixer aussi `limit` à une valeur
 suffisante. Le téléchargement Excel applique `library-filter` lorsque des
