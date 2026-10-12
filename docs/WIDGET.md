@@ -6,6 +6,7 @@
   ------------------ -------- ------------- ---------------------------------------
   `list_id`          oui      ---           identifiant de la liste
   `library-filter`   non      ---           codes de bibliothèque séparés par des virgules
+  `split-by-library` non      false         pastilles de filtre par bibliothèque
   `list`             non      ---           nom de la liste
   `display`          non      `carousel`    `carousel`, `grid`, `list`, `compact`
   `limit`            non      `12`          maximum présenté
@@ -29,6 +30,28 @@ dans l'une de ces bibliothèques (`holdings[].library`). Les espaces autour des
 codes sont ignorés. Une valeur vide ou composée seulement de codes absents
 du JSON ne filtre rien. Si un code existe et un autre non, le code existant
 est appliqué. Modifier l'attribut met à jour l'affichage sans recharger le JSON.
+
+`split-by-library` (attribut booléen, actif par sa présence) affiche, juste
+au-dessus des documents, une ligne de petites pastilles arrondies : « Toutes »
+puis chaque code `holdings[].library` présent dans la sélection, triés. Un clic
+filtre les documents de cette bibliothèque ; la pastille « Toutes » rétablit
+l'affichage complet. Le filtre se combine avec la recherche, `limit` et la
+pagination (retour à la page 1). La barre n'apparaît que s'il y a au moins deux
+bibliothèques. Le choix est réinitialisé si `list_id`, `library-filter` ou
+`split-by-library` change. Il n'affecte pas l'export Excel.
+
+`split-by-library` accepte aussi des codes séparés par des virgules, comme
+`library-filter` : `split-by-library="SCIEN,LASH"` n'affiche que ces
+bibliothèques (casse et espaces ignorés). Les codes absents des données sont
+ignorés sans erreur ; sans aucun code valide, toutes les bibliothèques sont
+proposées. Avec des codes valides, la barre s'affiche même pour une seule
+bibliothèque. Les noms en clair
+viennent de `widget/libraries.json` (à éditer à la main) : un objet par code,
+`{"name": "Valrose", "city": "Nice", "structure": "DIBSO"}`. Seul `name` est
+utilisé pour l'instant. Il détermine l'ordre des pastilles. Un code absent du fichier, ou un fichier
+introuvable, affiche le code brut ; le code reste visible au survol (`title`)
+quand un nom est affiché. Shadow Parts :
+`library-filter` (conteneur) et `library-chip` (pastille).
 
 ## 2. Chargement
 

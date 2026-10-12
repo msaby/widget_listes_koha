@@ -1,0 +1,112 @@
+{
+  "BIUTC": {
+    "name": "IUT Cannes",
+    "city": "Cannes",
+    "structure": "UNICA"
+  },
+  "BIUTF": {
+    "name": "IUT Nice",
+    "city": "Nice",
+    "structure": "UNICA"
+  },
+  "BIUM": {
+    "name": "IUT Menton",
+    "city": "Menton",
+    "structure": "UNICA"
+  },
+  "DRAGUIGNAN": {
+    "name": "Draguignan",
+    "city": "Draguignan",
+    "structure": "DIBSO"
+  },
+  "GEORGEV": {
+    "name": "George V",
+    "city": "Nice",
+    "structure": "DIBSO"
+  },
+  "LIEGEARD": {
+    "name": "Liégeard",
+    "city": "Nice",
+    "structure": "DIBSO"
+  },
+  "SCIEN": {
+    "name": "Valrose",
+    "city": "Nice",
+    "structure": "DIBSO"
+  },
+  "MEDP": {
+    "name": "Pasteur",
+    "city": "Nice",
+    "structure": "DIBSO"
+  },
+  "SJA": {
+    "name": "Saint-Jean d'Angély",
+    "city": "Nice",
+    "structure": "DIBSO"
+  },
+  "DROIT": {
+    "name": "Trotabas",
+    "city": "Nice",
+    "structure": "DIBSO"
+  },
+  "LASH": {
+    "name": "Carlone",
+    "city": "Nice",
+    "structure": "DIBSO"
+  },
+  "STAPS": {
+    "name": "STAPS",
+    "city": "Nice",
+    "structure": "DIBSO"
+  },
+  "LIRCE": {
+    "name": "LIRCES",
+    "city": "Nice",
+    "structure": "DIBSO"
+  },
+  "BCL": {
+    "name": "BCL",
+    "city": "Nice",
+    "structure": "DIBSO"
+  },
+  "VA": {
+    "name": "Villa Arson",
+    "city": "Nice",
+    "structure": "VA"
+  },
+  "JAD": {
+    "name": "LJAD",
+    "city": "Nice",
+    "structure": "UNICA"
+  },
+  "LCSOPHIA": {
+    "name": "Learning Center Sophia",
+    "city": "Sophia Antipolis",
+    "structure": "DIBSO"
+  },
+  "CMMC": {
+    "name": "CMMC",
+    "city": "Nice",
+    "structure": "UNICA"
+  },
+  "OCAVV": {
+    "name": "OCA Lagrange",
+    "city": "Nice",
+    "structure": "OCA"
+  },
+  "OCANI": {
+    "name": "OCA Mont-Gros",
+    "city": "Nice",
+    "structure": "OCA"
+  },
+  "OCASA": {
+    "name": "OCA Géoazur",
+    "city": "Sophia Antipolis",
+    "structure": "OCA"
+  },
+  "BIBEL": {
+    "name": "En ligne",
+    "city": "Nice",
+    "structure": "DIBSO"
+  }
+}

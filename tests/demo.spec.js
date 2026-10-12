@@ -52,7 +52,7 @@ test('démo à la racine : exemples et journal local utilisables', async ({ page
       { list_id: '32', biblionumber: '2', title: 'Autre exemple', holdings: [{ library: 'LASH' }] }],
   } }));
   await page.goto('/');
-  await expect(page.locator('.integration-example')).toHaveCount(7);
+  await expect(page.locator('.integration-example')).toHaveCount(9);
   await expect(page.locator('#scien koha-list-widget .book')).toHaveCount(1);
   await page.locator('#scien .integration-example summary').click();
   await expect(page.locator('#scien .integration-example code')).toContainText('library-filter="SCIEN"');
@@ -79,6 +79,6 @@ test('démo sans données : instructions de préparation accessibles', async ({ 
   await page.goto('/demo/index.html');
   await page.getByText('Démarrer et intégrer la démonstration', { exact: true }).click();
   await expect(page.getByText('python scripts/prepare_koha_data.py --skip-covers', { exact: false }).first()).toBeVisible();
-  await expect(page.locator('.integration-example')).toHaveCount(7);
+  await expect(page.locator('.integration-example')).toHaveCount(9);
   await expect(page.locator('#grid koha-list-widget .message')).toBeVisible();
 });

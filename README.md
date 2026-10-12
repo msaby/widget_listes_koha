@@ -64,6 +64,7 @@ Le Web Component `<koha-list-widget>` propose :
 -   récupération et cache local des couvertures ;
 -   prise en compte des exemplaires via `holdings` ;
 -   filtre facultatif par bibliothèque avec `library-filter="SCIEN,LASH"` ;
+-   pastilles de filtre par bibliothèque avec `split-by-library` ;
 -   accessibilité clavier et technologies d'assistance ;
 -   respect de `prefers-reduced-motion` ;
 -   personnalisation graphique via les Shadow Parts ;

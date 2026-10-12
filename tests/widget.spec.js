@@ -91,6 +91,84 @@ test('filtre les documents par bibliothèque sans recharger le JSON', async ({ p
   expect(requests).toBe(1);
 });
 
+test('split-by-library affiche les pastilles et filtre au clic de façon accessible', async ({ page }) => {
+  const data = { ...payload, documents: [
+    { ...documents[0], title: 'Sciences', holdings: [{ library: 'SCIEN' }] },
+    { ...documents[1], title: 'Lettres', holdings: [{ library: 'LASH' }] },
+    { ...documents[2], title: 'Deux bibliothèques', holdings: [{ library: 'SCIEN' }, { library: 'LASH' }] },
+  ] };
+  const absent = await mount(page, { display: 'list', limit: '20' }, data);
+  await expect(absent.locator('.library-filter')).toHaveCount(0);
+
+  const widget = await mount(page, { display: 'list', limit: '20',   'split-by-library': '', 'show-list-name': '' }, data);
+  const chips = widget.locator('.library-chip');
+  await expect(chips).toHaveText(['Toutes', 'Carlone', 'Valrose']);
+  await expect(widget.locator('.library-filter')).toHaveAttribute('role', 'group');
+  await expect(chips.first()).toHaveAttribute('aria-pressed', 'true');
+  expect(await widget.locator('.library-filter').evaluate(node => node.nextElementSibling.classList.contains('books'))).toBe(true);
+  await expect(widget.locator('.book')).toHaveCount(3);
+
+  await widget.locator('[data-library=SCIEN]').click();
+  await expect(widget.locator('.title')).toContainText(['Deux bibliothèques', 'Sciences']);
+  await expect(widget.locator('.book')).toHaveCount(2);
+  await expect(widget.locator('[data-library=SCIEN]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(chips.first()).toHaveAttribute('aria-pressed', 'false');
+  await expect(widget.locator('[role=status]').first()).toContainText('2 documents pour la bibliothèque Valrose');
+
+  await widget.locator('[data-library=LASH]').focus();
+  await page.keyboard.press('Enter');
+  await expect(widget.locator('.book')).toHaveCount(2);
+  await expect(widget.locator('.title')).toContainText(['Deux bibliothèques', 'Lettres']);
+
+  await chips.first().click();
+  await expect(widget.locator('.book')).toHaveCount(3);
+  const radius = await chips.first().evaluate(node => getComputedStyle(node).borderTopLeftRadius);
+  expect(parseFloat(radius)).toBeGreaterThan(50);
+  const results = await new AxeBuilder({ page }).include('koha-list-widget').analyze();
+  expect(results.violations).toEqual([]);
+});
+
+test('split-by-library affiche le code brut quand il n’est pas dans le mapping ou si le mapping échoue', async ({ page }) => {
+  const data = { ...payload, documents: [
+    { ...documents[0], title: 'A', holdings: [{ library: 'INCONNUE' }] },
+    { ...documents[1], title: 'B', holdings: [{ library: 'SCIEN' }] },
+  ] };
+  let widget = await mount(page, { display: 'list', 'split-by-library': '' }, data);
+  await expect(widget.locator('.library-chip')).toHaveText(['Toutes', 'INCONNUE', 'Valrose']);
+  await expect(widget.locator('[data-library=SCIEN]')).toHaveAttribute('title', 'SCIEN');
+
+  await page.route('**/widget/libraries.json', route => route.fulfill({ status: 404 }));
+  widget = await mount(page, { display: 'list', 'split-by-library': '' }, data);
+  await expect(widget.locator('.library-chip')).toHaveText(['Toutes', 'INCONNUE', 'SCIEN']);
+});
+
+test('split-by-library accepte une liste de codes et ignore les codes invalides', async ({ page }) => {
+  const data = { ...payload, documents: [
+    { ...documents[0], title: 'A', holdings: [{ library: 'SCIEN' }] },
+    { ...documents[1], title: 'B', holdings: [{ library: 'LASH' }] },
+    { ...documents[2], title: 'C', holdings: [{ library: 'MEDP' }] },
+  ] };
+  const chips = widget => widget.locator('.library-chip');
+  let widget = await mount(page, { display: 'list', 'split-by-library': ' scien , LASH , XXX ' }, data);
+  await expect(chips(widget)).toHaveText(['Toutes', 'Carlone', 'Valrose']);
+  await expect(widget.locator('.book')).toHaveCount(3);
+
+  widget = await mount(page, { display: 'list', 'split-by-library': 'MEDP' }, data);
+  await expect(chips(widget)).toHaveText(['Toutes', 'Pasteur']);
+
+  widget = await mount(page, { display: 'list', 'split-by-library': 'XXX,YYY' }, data);
+  await expect(chips(widget)).toHaveText(['Toutes', 'Carlone', 'Pasteur', 'Valrose']);
+
+  await widget.evaluate(node => node.setAttribute('split-by-library', 'LASH,SCIEN'));
+  await expect(chips(widget)).toHaveText(['Toutes', 'Carlone', 'Valrose']);
+});
+
+test('split-by-library est masqué avec une seule bibliothèque', async ({ page }) => {
+  const data = { ...payload, documents: [{ ...documents[0], holdings: [{ library: 'SCIEN' }] }] };
+  const widget = await mount(page, { display: 'list', 'split-by-library': '' }, data);
+  await expect(widget.locator('.library-filter')).toHaveCount(0);
+});
+
 test('l’Excel téléchargé contient uniquement les documents de la bibliothèque filtrée', async ({ page }, testInfo) => {
   const data = { ...payload, documents: [
     { ...documents[0], title: 'Sciences', holdings: [{ library: 'SCIEN', location: 'DOC' }] },

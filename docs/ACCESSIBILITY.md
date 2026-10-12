@@ -57,6 +57,19 @@ Résultat de recherche annoncé raisonnablement dans une région
 
 Ne pas annoncer chaque frappe de façon excessive.
 
+### Filtre par bibliothèque (`split-by-library`)
+
+-   boutons réels dans un groupe `role="group"` nommé « Filtrer par
+    bibliothèque » ;
+-   état exposé par `aria-pressed`, et pas seulement par la couleur (fond plein
+    et texte en gras pour la pastille active) ;
+-   survol, focus clavier visible et contraste d'au moins 4,5:1, y compris
+    pastille active survolée ;
+-   nom de la bibliothèque (ou code brut) comme nom accessible de la pastille ;
+-   le focus reste sur la pastille après le filtrage ;
+-   nombre de documents annoncé dans la région live, par exemple « 2 documents
+    pour la bibliothèque Valrose. ».
+
 ## 7. Pagination
 
 -   boutons réels ;

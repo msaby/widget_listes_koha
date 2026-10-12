@@ -15,6 +15,7 @@ const COLLATOR = new Intl.Collator('fr', { sensitivity: 'base', numeric: true })
 const PRIMO = 'https://catalogue.bu.univ-cotedazur.fr/permalink/f/11hf8mm/33UCA_KOHA';
 // Le module et dist/ sont des dossiers voisins, même sous un préfixe de site.
 const DATA_URL = new URL('../dist/prepareddata.json', import.meta.url).href;
+const LIBRARIES_URL = new URL('./libraries.json', import.meta.url).href;
 const text = value => typeof value === 'string' || typeof value === 'number' ? String(value) : '';
 const normalized = value => text(value).normalize('NFD').replace(/\p{M}/gu, '').toLocaleLowerCase('fr').trim();
 // NFD sépare les accents de leurs lettres ; \p{M} enlève ensuite ces marques.
@@ -174,6 +175,10 @@ button:hover:not(:disabled) { background:var(--koha-hover,#edf3f6); }
 .export { color:var(--koha-muted,#495b67); font-size:.875em; text-decoration:none; white-space:nowrap; }
 .export:hover { color:var(--koha-accent,#215a73); text-decoration:underline; }
 .action-icon { display:inline-block; margin-inline-end:.4em; line-height:1; }
+.library-filter { display:flex; flex-wrap:wrap; gap:.4rem; margin:0 0 .75rem; }
+.library-chip { min-height:24px; padding:.15rem .65rem; font-size:.75rem; line-height:1.4; border:1px solid var(--koha-accent,#215a73); border-radius:999px; background:transparent; color:var(--koha-accent,#215a73); }
+.library-chip:hover:not([aria-pressed=true]) { background:var(--koha-hover,#edf3f6); text-decoration:underline; }
+.library-chip[aria-pressed=true], .library-chip[aria-pressed=true]:hover:not(:disabled) { background:var(--koha-accent,#215a73); color:white; font-weight:600; }
 button:disabled { cursor:default; opacity:.5; }
 button[aria-current=page] { background:var(--koha-accent,#215a73); color:white; border-color:var(--koha-accent,#215a73); }
 :is(a,button,input,[tabindex]):focus-visible { outline:3px solid var(--koha-focus,#b45105); outline-offset:3px; }
@@ -228,7 +233,7 @@ export class KohaListWidget extends HTMLElement {
   // Seuls ces attributs déclenchent attributeChangedCallback quand ils sont modifiés.
   // Un attribut booléen comme searchable est activé par sa présence, même sans valeur.
   static observedAttributes = ['list_id', 'library-filter', 'list', 'display', 'limit', 'paginate', 'sort',
-    'searchable', 'show-list-name', 'description', 'visibility', 'autoplay', 'autoplay-delay', 'export', 'analytics-id', 'more-results-url'];
+    'searchable', 'show-list-name', 'description', 'visibility', 'autoplay', 'autoplay-delay', 'export', 'analytics-id', 'more-results-url', 'split-by-library'];
 
   constructor() {
     // super() initialise HTMLElement. Le Shadow DOM « open » isole le rendu,
@@ -241,6 +246,7 @@ export class KohaListWidget extends HTMLElement {
     this.query = '';
     this.collapsed = false;
     this.paused = false;
+    this.activeLibrary = null;
     this.loadVersion = 0;
     this.instanceId = `koha-list-widget-${++instanceCount}`;
   }
@@ -294,8 +300,8 @@ export class KohaListWidget extends HTMLElement {
     // Un tri ou un mode change le rendu ; list_id redémarre le chargement.
     if (previous === current) return;
     if (name === 'visibility') this.collapsed = current === 'collapsed';
-    if (name === 'list_id') { this.query = ''; this.page = 1; }
-    if (name === 'library-filter') this.page = 1;
+    if (name === 'list_id') { this.query = ''; this.page = 1; this.activeLibrary = null; }
+    if (name === 'library-filter' || name === 'split-by-library') { this.page = 1; this.activeLibrary = null; }
     if (['sort', 'limit', 'paginate', 'display'].includes(name)) this.page = 1;
     if (name === 'searchable' && current === null) this.query = '';
     this.queueUpdate(name === 'list_id');
@@ -361,13 +367,18 @@ export class KohaListWidget extends HTMLElement {
     this.render();
     this.request = new AbortController();
     try {
+      // Le mapping des noms est facultatif : toute erreur laisse les codes bruts.
+      const names = fetch(LIBRARIES_URL, { signal: this.request.signal })
+        .then(reply => reply.ok ? reply.json() : null).catch(() => null);
       const response = await fetch(this.dataUrl, { cache: 'no-store', signal: this.request.signal });
       // no-store demande des données fraîches. fetch ne rejette pas les HTTP 404/500,
       // d'où la vérification explicite de response.ok avant de décoder le JSON.
       if (!response.ok) throw new Error('HTTP');
       const payload = await response.json();
       if (!payload || !Array.isArray(payload.documents) || !payload.lists || typeof payload.lists !== 'object') throw new Error('Format');
+      const mapping = await names;
       if (version !== this.loadVersion) return;
+      this.libraryNames = mapping && typeof mapping === 'object' && !Array.isArray(mapping) ? mapping : {};
       this.data = payload;
       this.dataUrl = response.url || this.dataUrl;
     } catch (error) {
@@ -574,7 +585,41 @@ export class KohaListWidget extends HTMLElement {
         toolbar.append(controls);
       }
     }
-    this.content.append(resultsControls, this.carouselStage || this.books, this.paginationBottom);
+    this.content.append(resultsControls);
+    this.libraryFilter = null;
+    if (this.hasAttribute('split-by-library')) {
+      const label = code => {
+        const name = this.libraryNames && Object.hasOwn(this.libraryNames, code) ? text(this.libraryNames[code]?.name).trim() : '';
+        return name || code;
+      };
+      const present = [...new Set(this.selection.flatMap(doc => Array.isArray(doc?.holdings) ? doc.holdings : [])
+        .map(item => text(item?.library).trim()).filter(Boolean))];
+      // Une valeur vide ou sans aucun code présent dans les données garde toutes les bibliothèques.
+      const wanted = new Set((this.getAttribute('split-by-library') || '').split(',')
+        .map(value => value.trim().toUpperCase()).filter(Boolean));
+      const restricted = present.filter(code => wanted.has(code.toUpperCase()));
+      const codes = (restricted.length ? restricted : present).sort((a, b) => COLLATOR.compare(label(a), label(b)));
+      if (!codes.includes(this.activeLibrary)) this.activeLibrary = null;
+      if (codes.length > (restricted.length ? 0 : 1)) {
+        this.libraryFilter = element('div', { class: 'library-filter', part: 'library-filter', role: 'group', 'aria-label': 'Filtrer par bibliothèque' });
+        for (const code of [null, ...codes]) {
+          const chip = element('button', { type: 'button', class: 'library-chip', part: 'library-chip', 'data-focus': `library-${code ?? 'all'}`,
+            'data-library': code ?? '', 'aria-pressed': String(code === this.activeLibrary) }, code ? label(code) : 'Toutes');
+          if (code && label(code) !== code) chip.title = code;
+          chip.addEventListener('click', () => {
+            this.activeLibrary = code;
+            this.page = 1;
+            for (const other of this.libraryFilter.children) other.setAttribute('aria-pressed', String(other === chip));
+            this.updateResults();
+            this.live.textContent = `${this.results.length} document${this.results.length === 1 ? '' : 's'}`
+              + (code ? ` pour la bibliothèque ${label(code)}.` : ', toutes bibliothèques.');
+          });
+          this.libraryFilter.append(chip);
+        }
+        this.content.append(this.libraryFilter);
+      }
+    }
+    this.content.append(this.carouselStage || this.books, this.paginationBottom);
     this.updateResults();
     if (focusKey) {
       const replacement = [...this.shadowRoot.querySelectorAll('[data-focus]')].find(node => node.dataset.focus === focusKey);
@@ -607,7 +652,9 @@ export class KohaListWidget extends HTMLElement {
       }
       return COLLATOR.compare(titleKey(a.title), titleKey(b.title));
     });
+    const library = this.libraryFilter ? this.activeLibrary : null;
     this.results = sorted.filter(doc => {
+      if (library && !(Array.isArray(doc.holdings) && doc.holdings.some(item => text(item?.library).trim() === library))) return false;
       const indexed = normalized(SEARCH_FIELDS.map(field => text(doc[field])).join(' '));
       return terms.every(term => indexed.includes(term));
       // every signifie que TOUS les mots doivent être présents (logique ET).
