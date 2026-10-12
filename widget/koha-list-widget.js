@@ -194,10 +194,10 @@ input { width:min(100%,28rem); min-width:0; min-height:44px; border:1px solid va
 .cover { height:180px; display:flex; align-items:center; justify-content:center; background:var(--koha-cover-background,#f0f3f5); }
 .cover img { display:block; width:100%; height:100%; object-fit:contain; }
 .placeholder { color:var(--muted); font-size:.85rem; padding:.75rem; text-align:center; }
-.content { padding:.75rem; min-width:0; font-size:.8rem; overflow-wrap:anywhere; }
-.document-type { display:block; font-size:.8rem; letter-spacing:.04em; color:var(--muted); margin-bottom:.25rem; }
-.title { display:block; font-size:.8rem; line-height:1.4; font-weight:650; }
-.authors,.meta { display:block; font-size:.8rem; margin-top:.3rem; }
+.content { padding:.75rem; min-width:0; font-size:.85rem; overflow-wrap:anywhere; }
+.document-type { display:block; font-size:.85rem; letter-spacing:.04em; color:var(--muted); margin-bottom:.25rem; }
+.title { display:block; font-size:.85rem; line-height:1.4; font-weight:650; }
+.authors,.meta { display:block; font-size:.85rem; margin-top:.3rem; }
 .meta { color:var(--muted); }
 .grid .books { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr)); }
 .carousel .books { display:flex; overflow-x:auto; overscroll-behavior-x:contain; scroll-snap-type:x mandatory; scroll-padding:4px; scrollbar-width:thin; padding-bottom:12px; }
@@ -209,9 +209,9 @@ input { width:min(100%,28rem); min-width:0; min-height:44px; border:1px solid va
 .compact .book-link { border:0; border-bottom:1px solid var(--koha-border,#bac5cc); border-radius:0; padding:.4rem .35rem; }
 .compact-row { min-width:0; }
 .compact-primary { display:flex; align-items:baseline; gap:.45rem; min-width:0; white-space:nowrap; }
-.compact-primary .document-type { flex:0 0 auto; margin:0; font-size:.8rem; letter-spacing:.03em; text-transform:uppercase; color:var(--muted); }
-.compact-primary .title { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:.8rem; }
-.compact-details { display:block; margin-top:.1rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--muted); font-size:.8rem; line-height:1.3; }
+.compact-primary .document-type { flex:0 0 auto; margin:0; font-size:.85rem; letter-spacing:.03em; text-transform:uppercase; color:var(--muted); }
+.compact-primary .title { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:.85rem; }
+.compact-details { display:block; margin-top:.1rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--muted); font-size:.85rem; line-height:1.3; }
 .compact-details .authors,.compact-details .meta { display:inline; margin:0; font-size:inherit; color:inherit; }
 .compact-details .authors + .meta::before { content:' · '; }
 .empty,.message { padding:1rem 0; }
