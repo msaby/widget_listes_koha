@@ -389,6 +389,21 @@ export class KohaListWidget extends HTMLElement {
     if (version === this.loadVersion) { this.loading = false; this.render(); }
   }
 
+  codeList(attribute) {
+    return new Set((this.getAttribute(attribute) || '').split(',')
+      .map(value => value.trim().toUpperCase()).filter(Boolean));
+  }
+
+  // Un code peut désigner une bibliothèque ou une structure de libraries.json :
+  // une structure équivaut à toutes les bibliothèques qui la portent.
+  expandCodes(requested) {
+    const expanded = new Set(requested);
+    for (const [code, info] of Object.entries(this.libraryNames || {})) {
+      if (requested.has(text(info?.structure).trim().toUpperCase())) expanded.add(code.toUpperCase());
+    }
+    return expanded;
+  }
+
   clearTimers() {
     // clearTimeout empêche une fonction programmée de se déclencher plus tard.
     // L'observateur de taille doit également cesser d'observer l'ancien rendu.
@@ -422,8 +437,8 @@ export class KohaListWidget extends HTMLElement {
     // le mode graphique. Ces trois usages ne sont pas interchangeables.
     const documents = this.data?.documents || [];
     this.selection = documents.filter(doc => doc && integer(text(doc.list_id)) === this.listId);
-    const libraries = new Set((this.getAttribute('library-filter') || '').split(',')
-      .map(value => value.trim().toUpperCase()).filter(Boolean));
+    const requested = this.codeList('library-filter');
+    const libraries = this.expandCodes(requested);
     const inLibrary = doc => Array.isArray(doc?.holdings) && doc.holdings.some(item =>
       item && libraries.has(text(item.library).trim().toUpperCase()));
     // Un code absent de tout le JSON laisse la sélection entière visible.
@@ -520,7 +535,7 @@ export class KohaListWidget extends HTMLElement {
       const filtered = this.libraryFilterActive;
       const href = filtered ? URL.createObjectURL(filteredWorkbook(this.selection, this.dataUrl)) : exportUrl;
       if (filtered) this.exportObjectUrl = href;
-      const codes = [...libraries].join('-').replace(/[^A-Z0-9_-]/g, '_').slice(0, 80);
+      const codes = [...requested].join('-').replace(/[^A-Z0-9_-]/g, '_').slice(0, 80);
       const filename = filtered ? `liste-${this.listId}-${codes || 'bibliotheques'}.xlsx` : '';
       const link = element('a', { class: 'export', part: 'export', href, download: filename, 'data-focus': 'export' });
       link.append(element('span', { class: 'action-icon', 'aria-hidden': 'true' }, '⤓'),
@@ -595,8 +610,7 @@ export class KohaListWidget extends HTMLElement {
       const present = [...new Set(this.selection.flatMap(doc => Array.isArray(doc?.holdings) ? doc.holdings : [])
         .map(item => text(item?.library).trim()).filter(Boolean))];
       // Une valeur vide ou sans aucun code présent dans les données garde toutes les bibliothèques.
-      const wanted = new Set((this.getAttribute('split-by-library') || '').split(',')
-        .map(value => value.trim().toUpperCase()).filter(Boolean));
+      const wanted = this.expandCodes(this.codeList('split-by-library'));
       const restricted = present.filter(code => wanted.has(code.toUpperCase()));
       const codes = (restricted.length ? restricted : present).sort((a, b) => COLLATOR.compare(label(a), label(b)));
       if (!codes.includes(this.activeLibrary)) this.activeLibrary = null;

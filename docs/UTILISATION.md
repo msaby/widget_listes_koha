@@ -179,8 +179,8 @@ module dans le modèle de page si les scripts des blocs sont supprimés.
 | Réglage | Effet |
 | --- | --- |
 | `list_id` | Entier positif identifiant la liste, obligatoire. |
-| `library-filter` | Bibliothèques à conserver, par exemple `SCIEN` ou `SCIEN,LASH`. Vide ou entièrement inconnu : aucun filtre. |
-| `split-by-library` | Affiche au-dessus des documents des pastilles cliquables (une par bibliothèque, plus « Toutes ») pour filtrer l'affichage. Accepte une liste de codes, par exemple `SCIEN,LASH`, pour limiter les pastilles à ces bibliothèques ; les codes inconnus sont ignorés. Absente avec une seule bibliothèque ; noms en clair définis dans `widget/libraries.json` (code brut si absent du fichier) ; sans effet sur l'export Excel. |
+| `library-filter` | Bibliothèques à conserver, par code de bibliothèque ou de structure (`libraries.json`), par exemple `SCIEN`, `SCIEN,LASH`, `OCA` ou `OCA,LASH`. Vide ou entièrement inconnu : aucun filtre. |
+| `split-by-library` | Affiche au-dessus des documents des pastilles cliquables (une par bibliothèque, plus « Toutes ») pour filtrer l'affichage. Accepte une liste de codes de bibliothèque ou de structure, par exemple `SCIEN,LASH` ou `OCA`, pour limiter les pastilles ; les codes inconnus sont ignorés. Absente avec une seule bibliothèque ; noms en clair définis dans `widget/libraries.json` (code brut si absent du fichier) ; sans effet sur l'export Excel. |
 | `display` | `carousel` par défaut, ou `grid`, `list`, `compact`. |
 | `limit` | Maximum après recherche, 12 par défaut. Ce n'est pas une taille de page. |
 | `paginate` | Taille de page pour grille, liste et compact ; ignorée en carrousel. |

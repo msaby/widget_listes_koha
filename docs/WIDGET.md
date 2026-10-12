@@ -5,7 +5,7 @@
   Attribut           Requis   Défaut        Valeurs / rôle
   ------------------ -------- ------------- ---------------------------------------
   `list_id`          oui      ---           identifiant de la liste
-  `library-filter`   non      ---           codes de bibliothèque séparés par des virgules
+  `library-filter`   non      ---           codes de bibliothèque ou de structure séparés par des virgules
   `split-by-library` non      false         pastilles de filtre par bibliothèque
   `list`             non      ---           nom de la liste
   `display`          non      `carousel`    `carousel`, `grid`, `list`, `compact`
@@ -47,11 +47,26 @@ ignorés sans erreur ; sans aucun code valide, toutes les bibliothèques sont
 proposées. Avec des codes valides, la barre s'affiche même pour une seule
 bibliothèque. Les noms en clair
 viennent de `widget/libraries.json` (à éditer à la main) : un objet par code,
-`{"name": "Valrose", "city": "Nice", "structure": "DIBSO"}`. Seul `name` est
-utilisé pour l'instant. Il détermine l'ordre des pastilles. Un code absent du fichier, ou un fichier
-introuvable, affiche le code brut ; le code reste visible au survol (`title`)
-quand un nom est affiché. Shadow Parts :
+`{"name": "Valrose", "city": "Nice", "structure": "DIBSO"}`. `name` sert à
+l'affichage et détermine l'ordre des pastilles ; `structure` sert aux filtres
+ci-dessous ; `city` n'est pas utilisé pour l'instant. Un code absent du fichier,
+ou un fichier introuvable, affiche le code brut ; le code reste visible au
+survol (`title`) quand un nom est affiché. Shadow Parts :
 `library-filter` (conteneur) et `library-chip` (pastille).
+
+### Codes de structure
+
+`library-filter` et `split-by-library` prennent toujours des **codes**, jamais
+les noms affichés : soit un code de bibliothèque (clé de `libraries.json`, comme
+`VA` ou `SCIEN`), soit un code de structure (valeur du champ `structure`, comme
+`OCA` ou `DIBSO`). Un code de structure équivaut à lister toutes les
+bibliothèques qui le portent : avec `OCA` pour trois bibliothèques,
+`library-filter="OCA"` se comporte comme `library-filter="OCANI,OCASA,OCAVV"`.
+Les deux types de codes se combinent : `"OCA,DIBSO"`, `"OCA,LASH"`. La casse et
+les espaces sont ignorés, et les codes inconnus aussi. Si `libraries.json` est
+introuvable, seuls les codes de bibliothèque sont reconnus. Pour l'export Excel
+filtré, le nom du fichier reprend les codes saisis (par exemple
+`liste-11-OCA.xlsx`).
 
 ## 2. Chargement
 

@@ -163,6 +163,39 @@ test('split-by-library accepte une liste de codes et ignore les codes invalides'
   await expect(chips(widget)).toHaveText(['Toutes', 'Carlone', 'Valrose']);
 });
 
+test('library-filter et split-by-library acceptent des codes de structure', async ({ page }) => {
+  const data = { ...payload, documents: [
+    { ...documents[0], title: 'Nice', holdings: [{ library: 'OCANI' }] },
+    { ...documents[1], title: 'Sophia', holdings: [{ library: 'OCASA' }] },
+    { ...documents[2], title: 'Carlone', holdings: [{ library: 'LASH' }] },
+    { ...documents[3], title: 'Valrose', holdings: [{ library: 'SCIEN' }] },
+  ] };
+  const titles = widget => widget.locator('.title');
+  const codes = async widget => (await widget.locator('.library-chip').evaluateAll(nodes => nodes.map(node => node.dataset.library))).sort();
+
+  let widget = await mount(page, { display: 'list', 'library-filter': 'OCA' }, data);
+  await expect(widget.locator('.book')).toHaveCount(2);
+  await expect(titles(widget)).toContainText(['Nice', 'Sophia']);
+
+  await widget.evaluate(node => node.setAttribute('library-filter', 'oca, LASH'));
+  await expect(widget.locator('.book')).toHaveCount(3);
+
+  await widget.evaluate(node => node.setAttribute('library-filter', 'OCA,DIBSO'));
+  await expect(widget.locator('.book')).toHaveCount(4);
+
+  await widget.evaluate(node => node.setAttribute('library-filter', 'INCONNUE'));
+  await expect(widget.locator('.book')).toHaveCount(4);
+
+  widget = await mount(page, { display: 'list', 'split-by-library': 'OCA' }, data);
+  await expect.poll(() => codes(widget)).toEqual(['', 'OCANI', 'OCASA']);
+
+  await widget.evaluate(node => node.setAttribute('split-by-library', 'OCA,LASH'));
+  await expect.poll(() => codes(widget)).toEqual(['', 'LASH', 'OCANI', 'OCASA']);
+
+  await widget.evaluate(node => node.setAttribute('split-by-library', 'OCA,DIBSO'));
+  await expect.poll(() => codes(widget)).toEqual(['', 'LASH', 'OCANI', 'OCASA', 'SCIEN']);
+});
+
 test('split-by-library est masqué avec une seule bibliothèque', async ({ page }) => {
   const data = { ...payload, documents: [{ ...documents[0], holdings: [{ library: 'SCIEN' }] }] };
   const widget = await mount(page, { display: 'list', 'split-by-library': '' }, data);
