@@ -11,8 +11,9 @@ Utiliser selon le rendu :
 
 -   `role="region"` avec nom accessible ;
 -   `role="list"` / `role="listitem"` ;
--   titres structurés (`h3` pour titres de documents lorsque pertinent)
-    ;
+-   aucun niveau de titre (`h1`–`h6`) dans le widget, pour ne pas perturber la hiérarchie de
+    la page hôte : le nom de la liste (`show-list-name`) et les titres de documents sont des
+    `span`, et la région garde son nom accessible ;
 -   vrais `<button>` et `<a>`;
 -   focus visible.
 

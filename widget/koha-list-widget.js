@@ -154,7 +154,7 @@ const styles = `
 [hidden] { display:none !important; }
 .widget { position:relative; font-family:var(--koha-font,inherit); line-height:1.5; }
 h2,h3,p { margin:0; }
-.heading { font-size:1.4rem; margin-bottom:.5rem; }
+.heading { display:block; font-size:1.4rem; font-weight:700; margin-bottom:.5rem; }
 .description { margin-bottom:1rem; color:var(--muted); }
 .controls,.pagination { display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; margin:.75rem 0; }
 button,input { font:inherit; color:inherit; }
@@ -194,10 +194,10 @@ input { width:min(100%,28rem); min-width:0; min-height:44px; border:1px solid va
 .cover { height:180px; display:flex; align-items:center; justify-content:center; background:var(--koha-cover-background,#f0f3f5); }
 .cover img { display:block; width:100%; height:100%; object-fit:contain; }
 .placeholder { color:var(--muted); font-size:.85rem; padding:.75rem; text-align:center; }
-.content { padding:1rem; min-width:0; overflow-wrap:anywhere; }
-.document-type { display:block; font-size:.8rem; letter-spacing:.04em; color:var(--muted); margin-bottom:.35rem; }
-.title { font-size:1.08rem; line-height:1.4; font-weight:650; }
-.authors,.meta { display:block; font-size:1rem; margin-top:.45rem; }
+.content { padding:.75rem; min-width:0; font-size:.8rem; overflow-wrap:anywhere; }
+.document-type { display:block; font-size:.8rem; letter-spacing:.04em; color:var(--muted); margin-bottom:.25rem; }
+.title { display:block; font-size:.8rem; line-height:1.4; font-weight:650; }
+.authors,.meta { display:block; font-size:.8rem; margin-top:.3rem; }
 .meta { color:var(--muted); }
 .grid .books { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr)); }
 .carousel .books { display:flex; overflow-x:auto; overscroll-behavior-x:contain; scroll-snap-type:x mandatory; scroll-padding:4px; scrollbar-width:thin; padding-bottom:12px; }
@@ -209,9 +209,9 @@ input { width:min(100%,28rem); min-width:0; min-height:44px; border:1px solid va
 .compact .book-link { border:0; border-bottom:1px solid var(--koha-border,#bac5cc); border-radius:0; padding:.4rem .35rem; }
 .compact-row { min-width:0; }
 .compact-primary { display:flex; align-items:baseline; gap:.45rem; min-width:0; white-space:nowrap; }
-.compact-primary .document-type { flex:0 0 auto; margin:0; font-size:.72rem; letter-spacing:.03em; text-transform:uppercase; color:var(--muted); }
-.compact-primary .title { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:1rem; }
-.compact-details { display:block; margin-top:.1rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--muted); font-size:.88rem; line-height:1.3; }
+.compact-primary .document-type { flex:0 0 auto; margin:0; font-size:.8rem; letter-spacing:.03em; text-transform:uppercase; color:var(--muted); }
+.compact-primary .title { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:.8rem; }
+.compact-details { display:block; margin-top:.1rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--muted); font-size:.8rem; line-height:1.3; }
 .compact-details .authors,.compact-details .meta { display:inline; margin:0; font-size:inherit; color:inherit; }
 .compact-details .authors + .meta::before { content:' · '; }
 .empty,.message { padding:1rem 0; }
@@ -224,7 +224,7 @@ input { width:min(100%,28rem); min-width:0; min-height:44px; border:1px solid va
  .results-controls { grid-template-columns:1fr; }
  .list .book-layout { grid-template-columns:90px minmax(0,1fr); }
  .list .cover { width:90px; height:130px; }
- .content { padding:.75rem; }
+ .content { padding:.6rem; }
 }
 @media(prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto !important; animation:none !important; transition:none !important; } }
 `;
@@ -452,7 +452,7 @@ export class KohaListWidget extends HTMLElement {
     const skip = element('button', { type: 'button', class: 'skip', part: 'skip-widget' }, 'Passer cette sélection de documents');
     skip.addEventListener('click', () => this.skip());
     this.region.append(skip);
-    if (this.hasAttribute('show-list-name')) this.region.append(element('h2', { class: 'heading', part: 'list-name' }, name));
+    if (this.hasAttribute('show-list-name')) this.region.append(element('span', { class: 'heading', part: 'list-name' }, name));
     const description = this.getAttribute('description');
     if (description) {
       this.region.append(element('p', { id: 'description', class: 'description', part: 'list-description' }, description));
@@ -892,7 +892,7 @@ export class KohaListWidget extends HTMLElement {
       (compact ? (part === 'document-type' || part === 'title' ? primary : details) : content).append(node);
     };
     append('span', 'document-type', text(doc.document_type));
-    append(compact ? 'span' : 'h3', 'title', title, this.mode === 'list' ? 240 : 140);
+    append('span', 'title', title, this.mode === 'list' ? 240 : 140);
     const authors = displayAuthors(doc.authors);
     append('span', 'authors', authors, this.mode === 'list' ? 200 : 60, 61);
     const publisher = displayPublisher(doc.publisher);

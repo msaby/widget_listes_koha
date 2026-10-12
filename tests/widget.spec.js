@@ -241,7 +241,7 @@ for (const mode of ['carousel', 'grid', 'list', 'compact']) {
   test(`affichage ${mode}, limite et liens accessibles`, async ({ page }) => {
     const widget = await mount(page, { display: mode, 'show-list-name': '' });
     await expect(widget.getByRole('listitem')).toHaveCount(12);
-    await expect(widget.getByRole('heading', { name: 'Fonds professionnels' })).toBeVisible();
+    await expect(widget.getByText('Fonds professionnels', { exact: true })).toBeVisible();
     const first = widget.locator('.book-link').first();
     await expect(first).toHaveAttribute('target', '_blank');
     await expect(first).toHaveAttribute('rel', 'noopener noreferrer');
@@ -453,7 +453,7 @@ test('repli conserve nom et description, export complet reste indépendant', asy
   // contient la liste complète et n'est jamais reconstruit par le navigateur.
   const widget = await mount(page, { display: 'compact', searchable: '', visibility: 'collapsed',
     'show-list-name': '', description: 'Description de la sélection', export: 'xlsx', limit: '2' });
-  await expect(widget.getByRole('heading', { name: 'Fonds professionnels' })).toBeVisible();
+  await expect(widget.getByText('Fonds professionnels', { exact: true })).toBeVisible();
   await expect(widget.getByText('Description de la sélection')).toBeVisible();
   await expect(widget.locator('[part="collapsible-content"]')).toBeHidden();
   const toggle = widget.getByRole('button', { name: 'Afficher la sélection' });
