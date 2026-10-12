@@ -232,7 +232,7 @@ input { width:min(100%,28rem); min-width:0; min-height:44px; border:1px solid va
 export class KohaListWidget extends HTMLElement {
   // Seuls ces attributs déclenchent attributeChangedCallback quand ils sont modifiés.
   // Un attribut booléen comme searchable est activé par sa présence, même sans valeur.
-  static observedAttributes = ['list_id', 'library-filter', 'list', 'display', 'limit', 'paginate', 'sort',
+  static observedAttributes = ['list_id', 'filter-by-library', 'list', 'display', 'limit', 'paginate', 'sort',
     'searchable', 'show-list-name', 'description', 'visibility', 'autoplay', 'autoplay-delay', 'export', 'analytics-id', 'more-results-url', 'split-by-library'];
 
   constructor() {
@@ -301,7 +301,7 @@ export class KohaListWidget extends HTMLElement {
     if (previous === current) return;
     if (name === 'visibility') this.collapsed = current === 'collapsed';
     if (name === 'list_id') { this.query = ''; this.page = 1; this.activeLibrary = null; }
-    if (name === 'library-filter' || name === 'split-by-library') { this.page = 1; this.activeLibrary = null; }
+    if (name === 'filter-by-library' || name === 'split-by-library') { this.page = 1; this.activeLibrary = null; }
     if (['sort', 'limit', 'paginate', 'display'].includes(name)) this.page = 1;
     if (name === 'searchable' && current === null) this.query = '';
     this.queueUpdate(name === 'list_id');
@@ -437,7 +437,7 @@ export class KohaListWidget extends HTMLElement {
     // le mode graphique. Ces trois usages ne sont pas interchangeables.
     const documents = this.data?.documents || [];
     this.selection = documents.filter(doc => doc && integer(text(doc.list_id)) === this.listId);
-    const requested = this.codeList('library-filter');
+    const requested = this.codeList('filter-by-library');
     const libraries = this.expandCodes(requested);
     const inLibrary = doc => Array.isArray(doc?.holdings) && doc.holdings.some(item =>
       item && libraries.has(text(item.library).trim().toUpperCase()));

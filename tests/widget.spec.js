@@ -76,17 +76,17 @@ test('filtre les documents par bibliothèque sans recharger le JSON', async ({ p
   ] };
   let requests = 0;
   page.on('request', request => { if (request.url().endsWith('/dist/prepareddata.json')) requests++; });
-  const widget = await mount(page, { display: 'list', limit: '20', 'library-filter': 'SCIEN' }, data);
+  const widget = await mount(page, { display: 'list', limit: '20', 'filter-by-library': 'SCIEN' }, data);
   await expect(widget.locator('.book')).toHaveCount(2);
   await expect(widget.locator('.title')).toContainText(['Deux bibliothèques', 'Sciences']);
 
-  await widget.evaluate(node => node.setAttribute('library-filter', ' SCIEN , LASH '));
+  await widget.evaluate(node => node.setAttribute('filter-by-library', ' SCIEN , LASH '));
   await expect(widget.locator('.book')).toHaveCount(3);
-  await widget.evaluate(node => node.setAttribute('library-filter', 'INCONNUE'));
+  await widget.evaluate(node => node.setAttribute('filter-by-library', 'INCONNUE'));
   await expect(widget.locator('.book')).toHaveCount(4);
-  await widget.evaluate(node => node.setAttribute('library-filter', 'SCIEN,INCONNUE'));
+  await widget.evaluate(node => node.setAttribute('filter-by-library', 'SCIEN,INCONNUE'));
   await expect(widget.locator('.book')).toHaveCount(2);
-  await widget.evaluate(node => node.setAttribute('library-filter', ''));
+  await widget.evaluate(node => node.setAttribute('filter-by-library', ''));
   await expect(widget.locator('.book')).toHaveCount(4);
   expect(requests).toBe(1);
 });
@@ -163,7 +163,7 @@ test('split-by-library accepte une liste de codes et ignore les codes invalides'
   await expect(chips(widget)).toHaveText(['Toutes', 'Carlone', 'Valrose']);
 });
 
-test('library-filter et split-by-library acceptent des codes de structure', async ({ page }) => {
+test('filter-by-library et split-by-library acceptent des codes de structure', async ({ page }) => {
   const data = { ...payload, documents: [
     { ...documents[0], title: 'Nice', holdings: [{ library: 'OCANI' }] },
     { ...documents[1], title: 'Sophia', holdings: [{ library: 'OCASA' }] },
@@ -173,17 +173,17 @@ test('library-filter et split-by-library acceptent des codes de structure', asyn
   const titles = widget => widget.locator('.title');
   const codes = async widget => (await widget.locator('.library-chip').evaluateAll(nodes => nodes.map(node => node.dataset.library))).sort();
 
-  let widget = await mount(page, { display: 'list', 'library-filter': 'OCA' }, data);
+  let widget = await mount(page, { display: 'list', 'filter-by-library': 'OCA' }, data);
   await expect(widget.locator('.book')).toHaveCount(2);
   await expect(titles(widget)).toContainText(['Nice', 'Sophia']);
 
-  await widget.evaluate(node => node.setAttribute('library-filter', 'oca, LASH'));
+  await widget.evaluate(node => node.setAttribute('filter-by-library', 'oca, LASH'));
   await expect(widget.locator('.book')).toHaveCount(3);
 
-  await widget.evaluate(node => node.setAttribute('library-filter', 'OCA,DIBSO'));
+  await widget.evaluate(node => node.setAttribute('filter-by-library', 'OCA,DIBSO'));
   await expect(widget.locator('.book')).toHaveCount(4);
 
-  await widget.evaluate(node => node.setAttribute('library-filter', 'INCONNUE'));
+  await widget.evaluate(node => node.setAttribute('filter-by-library', 'INCONNUE'));
   await expect(widget.locator('.book')).toHaveCount(4);
 
   widget = await mount(page, { display: 'list', 'split-by-library': 'OCA' }, data);
@@ -208,7 +208,7 @@ test('l’Excel téléchargé contient uniquement les documents de la bibliothè
     { ...documents[1], title: 'Lettres', holdings: [{ library: 'LASH' }] },
     { ...documents[2], title: 'Sciences et lettres', holdings: [{ library: 'SCIEN' }, { library: 'LASH' }] },
   ] };
-  const widget = await mount(page, { display: 'list', export: 'xlsx', 'library-filter': 'SCIEN' }, data);
+  const widget = await mount(page, { display: 'list', export: 'xlsx', 'filter-by-library': 'SCIEN' }, data);
   const link = widget.getByRole('link', { name: 'Télécharger la sélection filtrée au format Excel' });
   await expect(link).toHaveAttribute('href', /^blob:/);
   const [download] = await Promise.all([page.waitForEvent('download'), link.click()]);
@@ -221,7 +221,7 @@ test('l’Excel téléchargé contient uniquement les documents de la bibliothè
   expect(workbook.toString('utf8')).not.toContain('>Lettres<');
   expect((workbook.toString('utf8').match(/<row r="\d+">/g) || [])).toHaveLength(3);
 
-  await widget.evaluate(node => node.setAttribute('library-filter', 'SCIEN,LASH'));
+  await widget.evaluate(node => node.setAttribute('filter-by-library', 'SCIEN,LASH'));
   const combined = widget.getByRole('link', { name: 'Télécharger la sélection filtrée au format Excel' });
   const [combinedDownload] = await Promise.all([page.waitForEvent('download'), combined.click()]);
   expect(combinedDownload.suggestedFilename()).toBe('liste-11-SCIEN-LASH.xlsx');
@@ -231,7 +231,7 @@ test('l’Excel téléchargé contient uniquement les documents de la bibliothè
   expect(combinedWorkbook).toContain('>Lettres<');
   expect((combinedWorkbook.match(/<row r="\d+">/g) || [])).toHaveLength(4);
 
-  await widget.evaluate(node => node.setAttribute('library-filter', 'INCONNUE'));
+  await widget.evaluate(node => node.setAttribute('filter-by-library', 'INCONNUE'));
   await expect(widget.getByRole('link', { name: 'Télécharger la liste complète au format Excel' }))
     .toHaveAttribute('href', 'http://127.0.0.1:4173/exports/liste-11.xlsx');
 });

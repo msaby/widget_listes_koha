@@ -5,7 +5,7 @@
   Attribut           Requis   Défaut        Valeurs / rôle
   ------------------ -------- ------------- ---------------------------------------
   `list_id`          oui      ---           identifiant de la liste
-  `library-filter`   non      ---           codes de bibliothèque ou de structure séparés par des virgules
+  `filter-by-library`   non      ---           codes de bibliothèque ou de structure séparés par des virgules
   `split-by-library` non      false         pastilles de filtre par bibliothèque
   `list`             non      ---           nom de la liste
   `display`          non      `carousel`    `carousel`, `grid`, `list`, `compact`
@@ -25,7 +25,7 @@
 Si `list_id` manque ou n'est pas un entier positif valide, **ne rien
 afficher**.
 
-`library-filter="SCIEN,LASH"` garde les documents ayant au moins un exemplaire
+`filter-by-library="SCIEN,LASH"` garde les documents ayant au moins un exemplaire
 dans l'une de ces bibliothèques (`holdings[].library`). Les espaces autour des
 codes sont ignorés. Une valeur vide ou composée seulement de codes absents
 du JSON ne filtre rien. Si un code existe et un autre non, le code existant
@@ -37,11 +37,11 @@ puis chaque code `holdings[].library` présent dans la sélection, triés. Un cl
 filtre les documents de cette bibliothèque ; la pastille « Toutes » rétablit
 l'affichage complet. Le filtre se combine avec la recherche, `limit` et la
 pagination (retour à la page 1). La barre n'apparaît que s'il y a au moins deux
-bibliothèques. Le choix est réinitialisé si `list_id`, `library-filter` ou
+bibliothèques. Le choix est réinitialisé si `list_id`, `filter-by-library` ou
 `split-by-library` change. Il n'affecte pas l'export Excel.
 
 `split-by-library` accepte aussi des codes séparés par des virgules, comme
-`library-filter` : `split-by-library="SCIEN,LASH"` n'affiche que ces
+`filter-by-library` : `split-by-library="SCIEN,LASH"` n'affiche que ces
 bibliothèques (casse et espaces ignorés). Les codes absents des données sont
 ignorés sans erreur ; sans aucun code valide, toutes les bibliothèques sont
 proposées. Avec des codes valides, la barre s'affiche même pour une seule
@@ -56,12 +56,12 @@ survol (`title`) quand un nom est affiché. Shadow Parts :
 
 ### Codes de structure
 
-`library-filter` et `split-by-library` prennent toujours des **codes**, jamais
+`filter-by-library` et `split-by-library` prennent toujours des **codes**, jamais
 les noms affichés : soit un code de bibliothèque (clé de `libraries.json`, comme
 `VA` ou `SCIEN`), soit un code de structure (valeur du champ `structure`, comme
 `OCA` ou `DIBSO`). Un code de structure équivaut à lister toutes les
 bibliothèques qui le portent : avec `OCA` pour trois bibliothèques,
-`library-filter="OCA"` se comporte comme `library-filter="OCANI,OCASA,OCAVV"`.
+`filter-by-library="OCA"` se comporte comme `filter-by-library="OCANI,OCASA,OCAVV"`.
 Les deux types de codes se combinent : `"OCA,DIBSO"`, `"OCA,LASH"`. La casse et
 les espaces sont ignorés, et les codes inconnus aussi. Si `libraries.json` est
 introuvable, seuls les codes de bibliothèque sont reconnus. Pour l'export Excel
@@ -240,7 +240,7 @@ bouton. Sinon aucun lien aveugle vers une ressource inexistante.
 
 Sans filtre actif, le lien télécharge l'Excel complet préparé par Python et
 porte le libellé « Télécharger la liste complète au format Excel ». Avec
-`library-filter`, il télécharge un XLSX généré dans le navigateur à partir des
+`filter-by-library`, il télécharge un XLSX généré dans le navigateur à partir des
 documents filtrés et porte le libellé « Télécharger la sélection filtrée au
 format Excel ». La recherche, la pagination et `limit` ne réduisent pas le
 contenu du classeur.

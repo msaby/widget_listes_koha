@@ -63,7 +63,7 @@ Le Web Component `<koha-list-widget>` propose :
 -   téléchargement Excel de la liste complète ou filtrée par bibliothèque ;
 -   récupération et cache local des couvertures ;
 -   prise en compte des exemplaires via `holdings` ;
--   filtre facultatif par bibliothèque ou par structure avec `library-filter="SCIEN,LASH"` ou `library-filter="OCA"` ;
+-   filtre facultatif par bibliothèque ou par structure avec `filter-by-library="SCIEN,LASH"` ou `filter-by-library="OCA"` ;
 -   pastilles de filtre par bibliothèque avec `split-by-library` ;
 -   accessibilité clavier et technologies d'assistance ;
 -   respect de `prefers-reduced-motion` ;
@@ -245,7 +245,7 @@ Le cache négatif est propre aux fournisseurs externes. Les échecs de
 ## Export Excel
 
 Un fichier XLSX est généré à l'avance pour chaque liste Koha. Si
-`library-filter` est actif, le widget produit un XLSX filtré au téléchargement.
+`filter-by-library` est actif, le widget produit un XLSX filtré au téléchargement.
 
 L'Excel contient tous les documents retenus par le filtre de bibliothèque,
 indépendamment de la recherche, de la pagination, de `limit` ou du mode

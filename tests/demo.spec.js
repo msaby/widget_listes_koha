@@ -55,7 +55,7 @@ test('démo à la racine : exemples et journal local utilisables', async ({ page
   await expect(page.locator('.integration-example')).toHaveCount(9);
   await expect(page.locator('#scien koha-list-widget .book')).toHaveCount(1);
   await page.locator('#scien .integration-example summary').click();
-  await expect(page.locator('#scien .integration-example code')).toContainText('library-filter="SCIEN"');
+  await expect(page.locator('#scien .integration-example code')).toContainText('filter-by-library="SCIEN"');
   await page.locator('#compact .integration-example summary').click();
   await expect(page.locator('#compact .integration-example code')).not.toContainText('src=');
   await expect(page.locator('#compact .integration-example code')).toContainText('list_id="32"');

@@ -179,7 +179,7 @@ module dans le modèle de page si les scripts des blocs sont supprimés.
 | Réglage | Effet |
 | --- | --- |
 | `list_id` | Entier positif identifiant la liste, obligatoire. |
-| `library-filter` | Bibliothèques à conserver, par code de bibliothèque ou de structure (`libraries.json`), par exemple `SCIEN`, `SCIEN,LASH`, `OCA` ou `OCA,LASH`. Vide ou entièrement inconnu : aucun filtre. |
+| `filter-by-library` | Bibliothèques à conserver, par code de bibliothèque ou de structure (`libraries.json`), par exemple `SCIEN`, `SCIEN,LASH`, `OCA` ou `OCA,LASH`. Vide ou entièrement inconnu : aucun filtre. |
 | `split-by-library` | Affiche au-dessus des documents des pastilles cliquables (une par bibliothèque, plus « Toutes ») pour filtrer l'affichage. Accepte une liste de codes de bibliothèque ou de structure, par exemple `SCIEN,LASH` ou `OCA`, pour limiter les pastilles ; les codes inconnus sont ignorés. Absente avec une seule bibliothèque ; noms en clair définis dans `widget/libraries.json` (code brut si absent du fichier) ; sans effet sur l'export Excel. |
 | `display` | `carousel` par défaut, ou `grid`, `list`, `compact`. |
 | `limit` | Maximum après recherche, 12 par défaut. Ce n'est pas une taille de page. |
@@ -189,7 +189,7 @@ module dans le modèle de page si les scripts des blocs sont supprimés.
 | `show-list-name`, `list`, `description` | Afficher le nom, le remplacer ou ajouter une description. |
 | `visibility` | `collapsible` pour commencer ouvert, `collapsed` pour commencer fermé. |
 | `autoplay`, `autoplay-delay` | Carrousel automatique, délai en millisecondes, 5000 par défaut. |
-| `export="xlsx"` | Afficher au-dessus des résultats le lien Excel, filtré par bibliothèque si `library-filter` est actif. |
+| `export="xlsx"` | Afficher au-dessus des résultats le lien Excel, filtré par bibliothèque si `filter-by-library` est actif. |
 | `more-results-url` | Afficher sous le widget « Voir plus de résultats » vers l'URL fournie. Accepte une URL HTTP(S), absolue ou relative à la page. |
 
 Les attributs booléens s'activent **par leur présence** : pour désactiver
@@ -203,7 +203,7 @@ Dans le carrousel, ils prennent la forme de chevrons latéraux `❮` et `❯`,
 boutons de pagination textuels.
 
 Pour paginer plus de douze documents, fixer aussi `limit` à une valeur
-suffisante. Le téléchargement Excel applique `library-filter` lorsque des
+suffisante. Le téléchargement Excel applique `filter-by-library` lorsque des
 bibliothèques demandées existent dans le JSON. Il ignore la recherche, la
 pagination et la limite d'affichage. Il inclut les résumés et les
 exemplaires, avec un exemplaire par ligne dans une cellule. Le widget

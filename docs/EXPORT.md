@@ -4,7 +4,7 @@
 
 Python génère **un XLSX par liste Koha** pendant le traitement
 quotidien. Sans filtre de bibliothèque actif, le widget télécharge ce fichier.
-Avec `library-filter`, le navigateur crée un XLSX contenant seulement les
+Avec `filter-by-library`, le navigateur crée un XLSX contenant seulement les
 documents de la liste ayant un exemplaire dans les bibliothèques demandées.
 Si aucun code demandé n'existe dans le JSON, le fichier complet reste utilisé.
 
