@@ -1,7 +1,11 @@
-/* Charger cette feuille dans la page hôte, après la définition du composant.
+/* Exemples de personnalisation, tous commentés : décommenter ce qui est utile.
+   Charger cette feuille dans la page hôte, après la définition du composant.
    Les variables et ::part() ne dépendent pas de la structure interne. */
-koha-list-widget {
-  --koha-accent: #215a73;
+
+/* Variables par défaut rendues explicites : accent, focus, arrondi des cartes et espacement entre documents.
+   Les trois règles ::part() mettent le nom de liste en gras, limitent la largeur de la description
+   à 70 caractères et rapprochent le contour de focus des cartes.
+koha-list-widget {: #215a73;
   --koha-focus: #b45105;
   --koha-radius: .5rem;
   --koha-gap: 1rem;
@@ -10,3 +14,58 @@ koha-list-widget {
 koha-list-widget::part(list-name) { font-weight: 650; }
 koha-list-widget::part(list-description) { max-width: 70ch; }
 koha-list-widget::part(book-link):focus-visible { outline-offset: 2px; }
+*/
+
+/* Change la police du widget (ici une police à empattements) et les couleurs du texte secondaire,
+   des bordures, du fond des cartes, du survol et du fond des couvertures.
+koha-list-widget {
+  --koha-font: Georgia, serif;
+  --koha-muted: #495b67;
+  --koha-border: #bac5cc;
+  --koha-surface: #fff;
+  --koha-hover: #edf3f6;
+  --koha-cover-background: #f0f3f5;
+}
+*/
+
+/* Rend les cartes transparentes et sans bordure visible, avec une ombre légère quand on les survole.
+koha-list-widget { --koha-surface: transparent; --koha-border: transparent; }
+koha-list-widget::part(book-link):hover { box-shadow: 0 2px 8px rgb(0 0 0 / .15); }
+*/
+
+/* Agrandit le nom de la liste en majuscules et met sa description en italique.
+koha-list-widget::part(list-name) { font-size: 1.8rem; text-transform: uppercase; }
+koha-list-widget::part(list-description) { font-style: italic; }
+*/
+
+/* Agrandit la zone de couverture à 220 px, recadre l'image pour remplir la zone
+   et met en italique le texte affiché quand il n'y a pas de couverture.
+koha-list-widget::part(cover) { height: 220px; }
+koha-list-widget::part(cover-image) { object-fit: cover; }
+koha-list-widget::part(cover-placeholder) { font-style: italic; }
+*/
+
+/* Centre la rangée de pastilles de bibliothèque et agrandit leur texte, affiché en majuscules.
+koha-list-widget::part(library-filter) { justify-content: center; }
+koha-list-widget::part(library-chip) { font-size: .85rem; text-transform: uppercase; }
+*/
+
+/* Arrondit complètement le champ de recherche, centre la pagination
+   et met en gras le lien Excel et le lien « Voir plus de résultats ».
+koha-list-widget::part(search-input) { border-radius: 999px; }
+koha-list-widget::part(pagination) { justify-content: center; }
+koha-list-widget::part(export) { font-weight: 600; }
+koha-list-widget::part(more-results) { font-weight: 600; }
+*/
+
+/* Élargit les colonnes des chevrons du carrousel à 56 px, les colore en orange
+   et réduit la taille du texte du bouton de défilement automatique.
+koha-list-widget::part(carousel-stage) { grid-template-columns: 56px minmax(0, 1fr) 56px; }
+koha-list-widget::part(prev), koha-list-widget::part(next) { color: #b45105; }
+koha-list-widget::part(autoplay-toggle) { font-size: .85rem; }
+*/
+
+/* Agrandit le texte du bouton qui affiche ou masque le contenu repliable.
+koha-list-widget::part(visibility-toggle) { font-size: 1.1rem; }
+*/
+
