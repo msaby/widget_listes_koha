@@ -31,11 +31,11 @@ test('démo avec les données générées, captures des quatre modes', async ({ 
     expect(response.headers()['content-type']).toContain('spreadsheetml.sheet');
     expect((await response.body()).subarray(0, 2).toString()).toBe('PK');
   }
-  const filtered = page.locator('#scien koha-list-widget .export');
+  const filtered = page.locator('#lash koha-list-widget .export');
   await expect(filtered).toHaveAttribute('href', /^blob:/);
   const [download] = await Promise.all([page.waitForEvent('download'), filtered.click()]);
-  expect(download.suggestedFilename()).toBe('liste-11-SCIEN.xlsx');
-  const destination = testInfo.outputPath('scien.xlsx');
+  expect(download.suggestedFilename()).toBe('liste-11-LASH.xlsx');
+  const destination = testInfo.outputPath('lash.xlsx');
   await download.saveAs(destination);
   expect((await readFile(destination)).subarray(0, 2).toString()).toBe('PK');
   // Une page plus large que la fenêtre signalerait un débordement horizontal global.
@@ -48,14 +48,14 @@ test('démo à la racine : exemples et journal local utilisables', async ({ page
   page.on('pageerror', error => errors.push(error.message));
   await page.route('**/dist/prepareddata.json', route => route.fulfill({ json: {
     lists: { '11': { list: 'Liste test' }, '32': { list: 'Autre test' } },
-    documents: [{ list_id: '11', biblionumber: '1', title: 'Exemple', holdings: [{ library: 'SCIEN' }] },
+    documents: [{ list_id: '11', biblionumber: '1', title: 'Exemple', holdings: [{ library: 'LASH' }] },
       { list_id: '32', biblionumber: '2', title: 'Autre exemple', holdings: [{ library: 'LASH' }] }],
   } }));
   await page.goto('/');
   await expect(page.locator('.integration-example')).toHaveCount(9);
-  await expect(page.locator('#scien koha-list-widget .book')).toHaveCount(1);
-  await page.locator('#scien .integration-example summary').click();
-  await expect(page.locator('#scien .integration-example code')).toContainText('filter-by-library="SCIEN"');
+  await expect(page.locator('#lash koha-list-widget .book')).toHaveCount(1);
+  await page.locator('#lash .integration-example summary').click();
+  await expect(page.locator('#lash .integration-example code')).toContainText('filter-by-library="LASH"');
   await page.locator('#compact .integration-example summary').click();
   await expect(page.locator('#compact .integration-example code')).not.toContainText('src=');
   await expect(page.locator('#compact .integration-example code')).toContainText('list_id="32"');
