@@ -284,9 +284,9 @@ test('compact reste sur une ligne et conserve les textes longs', async ({ page }
   const title = 'Un titre particulièrement long '.repeat(20);
   const widget = await mount(page, { display: 'compact' }, { ...payload, documents: [{ ...documents[0], title }] });
   await expect(widget.locator('.title')).toHaveText(title.trimEnd());
-  const dimensions = await widget.locator('.compact-row').evaluate(node => ({
+  const dimensions = await widget.locator('.compact-primary').evaluate(node => ({
     height: node.getBoundingClientRect().height,
-    line: parseFloat(getComputedStyle(node).lineHeight),
+    line: parseFloat(getComputedStyle(node.querySelector('.title')).lineHeight),
     titleWidth: node.querySelector('.title').clientWidth,
     titleScroll: node.querySelector('.title').scrollWidth,
   }));
@@ -456,10 +456,11 @@ test('repli conserve nom et description, export complet reste indépendant', asy
   await expect(widget.getByText('Fonds professionnels', { exact: true })).toBeVisible();
   await expect(widget.getByText('Description de la sélection')).toBeVisible();
   await expect(widget.locator('[part="collapsible-content"]')).toBeHidden();
-  const toggle = widget.getByRole('button', { name: 'Afficher la sélection' });
+  const toggle = widget.locator('[part="visibility-toggle"]');
+  await expect(toggle).toHaveAccessibleName('Afficher la sélection');
   await expect(toggle.locator('[aria-hidden="true"]')).toHaveText('▶');
   await toggle.click();
-  await expect(widget.locator('[part="visibility-toggle"]')).toHaveAttribute('aria-expanded', 'true');
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
   await expect(toggle).toHaveAccessibleName('Replier la sélection');
   await expect(toggle.locator('[aria-hidden="true"]')).toHaveText('▼');
   await expect(widget.locator('[part="collapsible-content"]')).toBeVisible();
@@ -479,7 +480,7 @@ test('lien Excel aligné à droite et au bas de la pagination supérieure', asyn
   const geometry = await widget.evaluate(node => {
     const bounds = selector => node.shadowRoot.querySelector(selector).getBoundingClientRect();
     const row = bounds('.results-controls');
-    const pagination = bounds('.pagination-top');
+    const pagination = bounds('.pagination');
     const link = bounds('.export');
     return { rowRight: row.right, paginationBottom: pagination.bottom, linkRight: link.right, linkBottom: link.bottom };
   });
